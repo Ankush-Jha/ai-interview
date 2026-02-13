@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Base ─── */
+body {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Custom Scrollbar ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ─── Range Slider ─── */
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 24px; width: 24px;
+  border-radius: 50%;
+  background: #0D9488;
+  cursor: pointer;
+  margin-top: -10px;
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.4);
+  border: 2px solid white;
+}
+input[type=range]::-moz-range-thumb {
+  height: 24px; width: 24px;
+  border-radius: 50%;
+  background: #0D9488;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.4);
+  border: 2px solid white;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%; height: 4px;
+  cursor: pointer;
+  background: #E5E7EB;
+  border-radius: 999px;
+}
+
+/* ─── Toggle Switch ─── */
+.toggle-checkbox:checked { right: 0; border-color: #0D9488; }
+.toggle-checkbox:checked + .toggle-label { background-color: #0D9488; }
+
+/* ─── Voice Mode Animations ─── */
+.voice-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  overflow: hidden;
+}
+.wave-layer {
+  position: absolute;
+  border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+  background: rgba(13, 148, 136, 0.05);
+  animation: fluid-wave 8s linear infinite;
+}
+.wave-layer:nth-child(1) { width: 300px; height: 300px; animation-duration: 7s; background: rgba(13, 148, 136, 0.1); }
+.wave-layer:nth-child(2) { width: 450px; height: 430px; animation-duration: 11s; animation-direction: reverse; background: rgba(13, 148, 136, 0.08); }
+.wave-layer:nth-child(3) { width: 600px; height: 580px; animation-duration: 13s; background: rgba(13, 148, 136, 0.05); }
+.wave-layer:nth-child(4) { width: 750px; height: 730px; animation-duration: 18s; animation-direction: reverse; background: rgba(13, 148, 136, 0.03); }
+
+.core-pulse {
+  width: 120px; height: 120px;
+  background: radial-gradient(circle, rgba(13,148,136,0.2) 0%, rgba(13,148,136,0) 70%);
+  border-radius: 50%;
+  position: absolute;
+  z-index: 10;
+  animation: core-pulse 2s ease-in-out infinite;
+}
+
+@keyframes fluid-wave {
+  0%   { transform: rotate(0deg);   border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+  33%  { border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%; }
+  66%  { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
+  100% { transform: rotate(360deg); border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+}
+@keyframes core-pulse {
+  0%   { transform: scale(0.95); opacity: 0.5; }
+  50%  { transform: scale(1.2);  opacity: 0.8; }
+  100% { transform: scale(0.95); opacity: 0.5; }
+}
+
+/* ─── Mic Button Pulse ─── */
+.mic-button-active {
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  animation: pulse-red 2s infinite;
+}
+@keyframes pulse-red {
+  0%   { transform: scale(0.95); box-shadow: 0 0 0 0   rgba(239, 68, 68, 0.7); }
+  70%  { transform: scale(1);    box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);   }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0   rgba(239, 68, 68, 0);   }
+}
+
+/* ─── Circular Chart ─── */
+@keyframes progress {
+  0% { stroke-dasharray: 0, 100; }
+}
+.circular-chart {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  max-height: 250px;
+}
+.circle-bg { fill: none; stroke: #E2E8F0; stroke-width: 2.5; }
+.circle    { fill: none; stroke-width: 2.5; stroke-linecap: round; animation: progress 1s ease-out forwards; }
+.percentage {
+  fill: #1E293B;
+  font-family: 'Inter', sans-serif;
+  font-weight: bold;
+  font-size: 0.5em;
+  text-anchor: middle;
+}
+.percentage-label {
+  fill: #94a3b8;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 0.15em;
+  text-anchor: middle;
+}
