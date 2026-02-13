@@ -6,6 +6,28 @@ import { useSpeechRecognition } from '../hooks/useSpeechRecognition'
 import { useSpeechSynthesis } from '../hooks/useSpeechSynthesis'
 import CodeEditor from '../components/CodeEditor'
 
+/* ─── Starter Code Generator ─── */
+function toSnakeCase(name) {
+    return name.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '')
+}
+
+function getStarterCode(fnName, lang) {
+    const snakeName = toSnakeCase(fnName)
+    const l = (lang || 'python').toLowerCase()
+
+    if (l === 'python' || l === 'py') {
+        return `def ${snakeName}(data):\n    # Write your solution here\n    pass\n`
+    }
+    if (l === 'java') {
+        return `public static Object ${fnName}(Object data) {\n    // Write your solution here\n    return null;\n}\n`
+    }
+    if (l === 'cpp' || l === 'c++') {
+        return `auto ${fnName}(auto data) {\n    // Write your solution here\n}\n`
+    }
+    // JavaScript default
+    return `function ${fnName}(data) {\n  // Write your solution here\n}\n`
+}
+
 /* ─── Voice Mode Sub-component ─── */
 function VoiceMode({ transcript, interimTranscript, isListening, onStart, onStop }) {
     return (
@@ -334,8 +356,11 @@ export default function InterviewSession() {
                     <div className="flex-1 min-h-0">
                         <CodeEditor
                             question={currentQuestion.question}
-                            starterCode={currentQuestion.starterCode || `function ${currentQuestion.functionName || 'solution'}() {\n  // your code here\n}`}
-                            language={currentQuestion.language || 'javascript'}
+                            starterCode={currentQuestion.starterCode || getStarterCode(
+                                currentQuestion.functionName || 'solution',
+                                currentQuestion.language || 'python'
+                            )}
+                            language={currentQuestion.language || 'python'}
                             testCases={currentQuestion.testCases || []}
                             functionName={currentQuestion.functionName || 'solution'}
                             hints={currentQuestion.hints || []}
