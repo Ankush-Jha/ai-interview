@@ -1,74 +1,205 @@
 /**
- * Sandboxed code execution for interview coding questions.
- * Runs JavaScript in a Web Worker, with timeout protection.
+ * Code execution engine for interview coding questions.
+ * - JavaScript: runs locally in a Web Worker (instant)
+ * - Python / Java / C++: runs remotely via Piston API (free, no key)
  */
 
-// ─── JavaScript Execution via Web Worker ─────────────────────────────────────
+const PISTON_URL = "https://emkc.org/api/v2/piston/execute";
 
-function createWorkerBlob(code, testCases, fnName) {
-    const workerCode = `
-        // Block dangerous globals
-        self.fetch = undefined;
-        self.XMLHttpRequest = undefined;
-        self.importScripts = undefined;
-        self.WebSocket = undefined;
+// ─── Language config ─────────────────────────────────────────────────────────
 
-        try {
-            // Execute user code to define the function
-            ${code}
+const LANG_CONFIG = {
+    javascript: { piston: "javascript", version: "18.15.0", runtime: "node", ext: "js" },
+    python: { piston: "python", version: "3.10.0", ext: "py" },
+    java: { piston: "java", version: "15.0.2", ext: "java" },
+    "c++": { piston: "c++", version: "10.2.0", ext: "cpp" },
+    cpp: { piston: "c++", version: "10.2.0", ext: "cpp" },
+};
 
-            // Run test cases
-            const results = [];
-            const testCases = ${JSON.stringify(testCases)};
+// ─── Piston API call ─────────────────────────────────────────────────────────
 
-            for (const tc of testCases) {
-                try {
-                    // Parse inputs
-                    const args = JSON.parse('[' + tc.input + ']');
-                    const expected = JSON.parse(tc.expected);
+async function callPiston(code, language, stdin = "") {
+    const config = LANG_CONFIG[language.toLowerCase()] || LANG_CONFIG.python;
 
-                    // Call the function
-                    const actual = ${fnName}(...args);
+    const body = {
+        language: config.piston,
+        version: config.version,
+        files: [{ name: `main.${config.ext}`, content: code }],
+        stdin,
+        compile_timeout: 10000,
+        run_timeout: 10000,
+        compile_memory_limit: -1,
+        run_memory_limit: -1,
+    };
 
-                    // Compare
-                    const pass = JSON.stringify(actual) === JSON.stringify(expected);
-                    results.push({
-                        input: tc.input,
-                        expected: tc.expected,
-                        actual: JSON.stringify(actual),
-                        pass,
-                        description: tc.description || ''
-                    });
-                } catch (err) {
-                    results.push({
-                        input: tc.input,
-                        expected: tc.expected,
-                        actual: 'Error: ' + err.message,
-                        pass: false,
-                        description: tc.description || ''
-                    });
-                }
-            }
+    if (config.runtime) body.runtime = config.runtime;
 
-            self.postMessage({ success: true, results });
-        } catch (err) {
-            self.postMessage({ success: false, error: err.message });
-        }
-    `;
-    return new Blob([workerCode], { type: "application/javascript" });
+    const res = await fetch(PISTON_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Piston API error (${res.status}): ${text}`);
+    }
+
+    const data = await res.json();
+    const run = data.run || {};
+
+    return {
+        stdout: run.stdout || "",
+        stderr: run.stderr || "",
+        exitCode: run.code ?? -1,
+        error: run.signal ? `Process killed by signal: ${run.signal}` : null,
+    };
 }
 
-/**
- * Run JavaScript code against test cases in a sandboxed Web Worker.
- * @param {string} code - User's JavaScript code
- * @param {Array} testCases - [{input, expected, description}]
- * @param {string} fnName - Name of the function to test
- * @param {number} timeout - Max execution time in ms (default 10s)
- * @returns {Promise<{passed, failed, total, results, error}>}
- */
-export function runJavaScript(code, testCases, fnName, timeout = 10000) {
+// ─── Test harness builders ───────────────────────────────────────────────────
+
+function buildPythonHarness(userCode, testCases, fnName) {
+    const tcJson = JSON.stringify(testCases);
+    return `
+${userCode}
+
+# ─── Test runner (auto-generated) ───
+import json as _json, sys as _sys
+
+def _to_snake(name):
+    import re
+    s = re.sub(r'([A-Z])', r'_\\1', name).lower().lstrip('_')
+    return s
+
+# Find the function
+_fn = None
+_candidates = ["${fnName}", _to_snake("${fnName}"), "${fnName}".lower()]
+for _name in _candidates:
+    if _name in dir() and callable(eval(_name)):
+        _fn = eval(_name)
+        break
+
+if not _fn:
+    # Try to find any user-defined function
+    import types as _types
+    _user_fns = [v for k, v in list(globals().items()) if isinstance(v, _types.FunctionType) and not k.startswith('_')]
+    if _user_fns:
+        _fn = _user_fns[-1]
+
+if not _fn:
+    print(_json.dumps({"error": f"Function '{_candidates[0]}' not found. Define a function matching the expected name."}))
+    _sys.exit(0)
+
+_tests = _json.loads('${tcJson.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}')
+_results = []
+
+for _tc in _tests:
+    try:
+        _input_str = _tc["input"].strip()
+        _input_val = eval(_input_str)
+        if isinstance(_input_val, tuple):
+            _out = _fn(*_input_val)
+        else:
+            _out = _fn(_input_val)
+        _expected_val = eval(_tc["expected"].strip())
+        if isinstance(_out, float):
+            _out = round(_out, 2)
+        if isinstance(_expected_val, float):
+            _expected_val = round(_expected_val, 2)
+        _pass = _out == _expected_val
+        _results.append({"pass": _pass, "actual": str(_out), "expected": str(_expected_val), "input": _tc["input"], "description": _tc.get("description", "")})
+    except Exception as _e:
+        _results.append({"pass": False, "actual": f"Error: {_e}", "expected": _tc["expected"], "input": _tc["input"], "description": _tc.get("description", "")})
+
+print(_json.dumps(_results))
+`;
+}
+
+function buildJavaScriptHarness(userCode, testCases, fnName) {
+    const tcJson = JSON.stringify(testCases);
+    return `
+${userCode}
+
+// ─── Test runner (auto-generated) ───
+const _tests = ${tcJson};
+const _results = [];
+
+// Find the function
+let _fn;
+try { _fn = eval("${fnName}"); } catch(e) {}
+if (!_fn) try { _fn = eval("${fnName.charAt(0).toLowerCase() + fnName.slice(1)}"); } catch(e) {}
+if (!_fn) try { _fn = eval("${fnName.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '')}"); } catch(e) {}
+
+if (typeof _fn !== "function") {
+    console.log(JSON.stringify({error: "Function '${fnName}' not found. Define a function matching the expected name."}));
+    process.exit(0);
+}
+
+for (const _tc of _tests) {
+    try {
+        const _input = eval(_tc.input);
+        let _out;
+        if (Array.isArray(_input) && _tc.input.trim().startsWith("[") && _tc.input.includes(",")) {
+            _out = _fn(..._input);
+        } else {
+            _out = _fn(_input);
+        }
+        const _expected = eval(_tc.expected);
+        const _pass = JSON.stringify(_out) === JSON.stringify(_expected) ||
+                       (typeof _out === "number" && typeof _expected === "number" &&
+                        Math.abs(_out - _expected) < 0.01);
+        _results.push({pass: _pass, actual: String(_out), expected: String(_expected), input: _tc.input, description: _tc.description || ""});
+    } catch(e) {
+        _results.push({pass: false, actual: "Error: " + e.message, expected: _tc.expected, input: _tc.input, description: _tc.description || ""});
+    }
+}
+console.log(JSON.stringify(_results));
+`;
+}
+
+function buildJavaHarness(userCode, testCases, fnName) {
+    // For Java, we wrap test execution with a main method
+    const tcInputs = testCases.map(tc => tc.input).join('","');
+    const tcExpected = testCases.map(tc => tc.expected).join('","');
+    const tcDescs = testCases.map(tc => (tc.description || "")).join('","');
+
+    return `
+import java.util.*;
+import java.util.stream.*;
+import org.json.*;
+
+${userCode}
+
+// Note: Java execution relies on the user writing a complete class.
+// For simplicity, we just compile and run their code as-is.
+`;
+}
+
+// ─── JavaScript local execution via Web Worker ───────────────────────────────
+
+function runJavaScriptLocal(code, testCases, fnName, timeout = 10000) {
     return new Promise((resolve) => {
-        const blob = createWorkerBlob(code, testCases, fnName);
+        const harness = buildJavaScriptHarness(code, testCases, fnName);
+
+        const workerCode = `
+            self.fetch = undefined;
+            self.XMLHttpRequest = undefined;
+            self.WebSocket = undefined;
+
+            // Capture console.log output
+            let _output = "";
+            const _origLog = console.log;
+            console.log = (...args) => { _output += args.join(" ") + "\\n"; };
+
+            try {
+                ${harness}
+                self.postMessage({ success: true, output: _output });
+            } catch (err) {
+                self.postMessage({ success: false, error: err.message });
+            }
+        `;
+
+        const blob = new Blob([workerCode], { type: "application/javascript" });
         const url = URL.createObjectURL(blob);
         const worker = new Worker(url);
 
@@ -79,10 +210,8 @@ export function runJavaScript(code, testCases, fnName, timeout = 10000) {
                 passed: 0,
                 failed: testCases.length,
                 total: testCases.length,
-                results: testCases.map((tc) => ({
-                    ...tc,
-                    actual: "Timeout — code took too long (possible infinite loop)",
-                    pass: false,
+                results: testCases.map(tc => ({
+                    ...tc, actual: "Timeout — possible infinite loop", pass: false,
                 })),
                 error: "Execution timed out after 10 seconds",
             });
@@ -94,23 +223,19 @@ export function runJavaScript(code, testCases, fnName, timeout = 10000) {
             URL.revokeObjectURL(url);
 
             if (e.data.success) {
-                const results = e.data.results;
-                const passed = results.filter((r) => r.pass).length;
-                resolve({
-                    passed,
-                    failed: results.length - passed,
-                    total: results.length,
-                    results,
-                    error: null,
-                });
+                try {
+                    const parsed = JSON.parse(e.data.output.trim());
+                    if (parsed.error) {
+                        resolve({ passed: 0, failed: testCases.length, total: testCases.length, results: [], error: parsed.error });
+                        return;
+                    }
+                    const passed = parsed.filter(r => r.pass).length;
+                    resolve({ passed, failed: parsed.length - passed, total: parsed.length, results: parsed, error: null });
+                } catch {
+                    resolve({ passed: 0, failed: testCases.length, total: testCases.length, results: [], error: "Failed to parse test results" });
+                }
             } else {
-                resolve({
-                    passed: 0,
-                    failed: testCases.length,
-                    total: testCases.length,
-                    results: [],
-                    error: e.data.error,
-                });
+                resolve({ passed: 0, failed: testCases.length, total: testCases.length, results: [], error: e.data.error });
             }
         };
 
@@ -118,207 +243,124 @@ export function runJavaScript(code, testCases, fnName, timeout = 10000) {
             clearTimeout(timer);
             worker.terminate();
             URL.revokeObjectURL(url);
-            resolve({
-                passed: 0,
-                failed: testCases.length,
-                total: testCases.length,
-                results: [],
-                error: err.message || "Worker execution error",
-            });
+            resolve({ passed: 0, failed: testCases.length, total: testCases.length, results: [], error: err.message || "Worker error" });
         };
     });
 }
 
-// ─── Python Execution via Pyodide in a Web Worker ────────────────────────────
+// ─── Remote execution via Piston API ─────────────────────────────────────────
 
-function createPythonWorkerBlob(code, testCases, fnName) {
-    const workerCode = `
-        importScripts("https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js");
+async function runWithPiston(code, language, testCases, fnName) {
+    const lang = language.toLowerCase();
 
-        async function run() {
-            try {
-                const pyodide = await loadPyodide();
-                const results = [];
-                const testCases = ${JSON.stringify(testCases)};
-                const expectedFnName = ${JSON.stringify(fnName)};
-                const userCode = ${JSON.stringify(code)};
+    // Build the combined script (user code + test harness)
+    let fullScript;
+    if (lang === "python" || lang === "py") {
+        fullScript = buildPythonHarness(code, testCases, fnName);
+    } else if (lang === "javascript" || lang === "js") {
+        fullScript = buildJavaScriptHarness(code, testCases, fnName);
+    } else {
+        // For Java/C++, run the code as-is and rely on stdout
+        fullScript = code;
+    }
 
-                // Step 1: Run user code to define functions
-                pyodide.runPython(userCode);
+    const result = await callPiston(fullScript, lang);
 
-                // Step 2: Find the actual function name
-                // Try: exact name, snake_case version, user-defined functions
-                function toSnakeCase(name) {
-                    return name.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '');
-                }
-                function toCamelCase(name) {
-                    return name.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
-                }
+    // Check for compilation/runtime errors
+    if (result.stderr && !result.stdout.trim()) {
+        return {
+            passed: 0,
+            failed: testCases.length,
+            total: testCases.length,
+            results: testCases.map(tc => ({
+                input: tc.input,
+                expected: tc.expected,
+                actual: `Error: ${result.stderr.slice(0, 300)}`,
+                pass: false,
+                description: tc.description || "",
+            })),
+            error: result.stderr.slice(0, 500),
+        };
+    }
 
-                // Extract all function names from user code
-                const defMatches = userCode.match(/def\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\(/g) || [];
-                const userFns = defMatches.map(m => m.replace(/def\\s+/, '').replace(/\\s*\\(/, ''));
+    // Parse the JSON results from stdout
+    try {
+        const output = result.stdout.trim();
+        const parsed = JSON.parse(output);
 
-                // Build candidate list: exact name, snake_case, camelCase, user-defined functions
-                const candidates = [
-                    expectedFnName,
-                    toSnakeCase(expectedFnName),
-                    toCamelCase(expectedFnName),
-                    expectedFnName.toLowerCase(),
-                    ...userFns
-                ];
-
-                // Find which one actually exists in Python
-                let actualFn = null;
-                for (const name of candidates) {
-                    try {
-                        const exists = pyodide.runPython("callable(" + name + ")");
-                        if (exists) { actualFn = name; break; }
-                    } catch(e) { /* not defined, try next */ }
-                }
-
-                if (!actualFn) {
-                    self.postMessage({
-                        success: false,
-                        error: "Could not find function '" + expectedFnName + "'. " +
-                               "Tried: " + candidates.filter((v,i,a) => a.indexOf(v) === i).join(", ") + ". " +
-                               "Make sure your function name matches."
-                    });
-                    return;
-                }
-
-                // Step 3: Run test cases
-                for (const tc of testCases) {
-                    try {
-                        // Smart input parsing: detect if input looks like a single value
-                        // (dict, list, string) or multiple comma-separated args
-                        const inputStr = tc.input.trim();
-                        let callExpr;
-
-                        // If input looks like a single dict/list/string, pass directly
-                        if (inputStr.startsWith('{') || inputStr.startsWith('[') || inputStr.startsWith('"') || inputStr.startsWith("'")) {
-                            callExpr = actualFn + "(" + inputStr + ")";
-                        } else {
-                            // Multiple args or simple values — pass as-is
-                            callExpr = actualFn + "(" + inputStr + ")";
-                        }
-
-                        const resultScript = "import json\\n" +
-                            "_result = " + callExpr + "\\n" +
-                            "str(round(_result, 2) if isinstance(_result, float) else _result)";
-
-                        const actual = pyodide.runPython(resultScript);
-                        const expected = tc.expected.trim();
-                        const actualClean = String(actual).trim().replace(/^['"]|['"]$/g, "");
-                        const expectedClean = expected.replace(/^['"]|['"]$/g, "");
-
-                        results.push({
-                            input: tc.input,
-                            expected: tc.expected,
-                            actual: actualClean,
-                            pass: actualClean === expectedClean,
-                            description: tc.description || ""
-                        });
-                    } catch (err) {
-                        results.push({
-                            input: tc.input,
-                            expected: tc.expected,
-                            actual: "Error: " + (err.message || String(err)),
-                            pass: false,
-                            description: tc.description || ""
-                        });
-                    }
-                }
-
-                self.postMessage({ success: true, results });
-            } catch (err) {
-                self.postMessage({ success: false, error: "Pyodide error: " + (err.message || String(err)) });
-            }
+        // Check if it's an error message
+        if (parsed.error) {
+            return {
+                passed: 0,
+                failed: testCases.length,
+                total: testCases.length,
+                results: [],
+                error: parsed.error,
+            };
         }
 
-        run();
-    `;
-    return new Blob([workerCode], { type: "application/javascript" });
-}
-
-/**
- * Run Python code against test cases using Pyodide in a Web Worker.
- */
-export function runPython(code, testCases, fnName, timeout = 30000) {
-    return new Promise((resolve) => {
-        const blob = createPythonWorkerBlob(code, testCases, fnName);
-        const url = URL.createObjectURL(blob);
-        const worker = new Worker(url);
-
-        const timer = setTimeout(() => {
-            worker.terminate();
-            URL.revokeObjectURL(url);
-            resolve({
-                passed: 0,
-                failed: testCases.length,
-                total: testCases.length,
-                results: testCases.map((tc) => ({
-                    ...tc,
-                    actual: "Timeout — Pyodide took too long to load or execute",
-                    pass: false,
-                })),
-                error: "Execution timed out (Pyodide may still be loading — try again)",
-            });
-        }, timeout);
-
-        worker.onmessage = (e) => {
-            clearTimeout(timer);
-            worker.terminate();
-            URL.revokeObjectURL(url);
-
-            if (e.data.success) {
-                const results = e.data.results;
-                const passed = results.filter((r) => r.pass).length;
-                resolve({
-                    passed,
-                    failed: results.length - passed,
-                    total: results.length,
-                    results,
-                    error: null,
-                });
-            } else {
-                resolve({
-                    passed: 0,
-                    failed: testCases.length,
-                    total: testCases.length,
-                    results: [],
-                    error: e.data.error,
-                });
-            }
+        const passed = parsed.filter(r => r.pass).length;
+        return {
+            passed,
+            failed: parsed.length - passed,
+            total: parsed.length,
+            results: parsed,
+            error: null,
         };
-
-        worker.onerror = (err) => {
-            clearTimeout(timer);
-            worker.terminate();
-            URL.revokeObjectURL(url);
-            resolve({
-                passed: 0,
-                failed: testCases.length,
-                total: testCases.length,
-                results: [],
-                error: err.message || "Python worker execution error",
-            });
+    } catch {
+        // If we can't parse JSON, return stdout/stderr as error
+        return {
+            passed: 0,
+            failed: testCases.length,
+            total: testCases.length,
+            results: [],
+            error: result.stdout || result.stderr || "No output from code execution",
         };
-    });
+    }
 }
 
 // ─── Unified Runner ──────────────────────────────────────────────────────────
 
 /**
- * Run code against test cases (auto-detects language).
+ * Run code against test cases. Uses local Web Worker for JS, Piston API for everything else.
+ * @param {string} code - User's source code
+ * @param {string} language - Programming language
+ * @param {Array} testCases - [{input, expected, description}]
+ * @param {string} fnName - Expected function name
+ * @returns {Promise<{passed, failed, total, results, error}>}
  */
 export async function runTests(code, language, testCases, fnName) {
-    const lang = (language || "javascript").toLowerCase();
+    const lang = (language || "python").toLowerCase();
 
-    if (lang === "python" || lang === "py") {
-        return runPython(code, testCases, fnName);
+    if (!code || !code.trim()) {
+        return {
+            passed: 0,
+            failed: testCases.length,
+            total: testCases.length,
+            results: [],
+            error: "No code to run. Write your solution first!",
+        };
     }
 
-    // Default to JavaScript
-    return runJavaScript(code, testCases, fnName);
+    if (!testCases || testCases.length === 0) {
+        return { passed: 0, failed: 0, total: 0, results: [], error: "No test cases available" };
+    }
+
+    try {
+        // JavaScript runs locally for speed
+        if (lang === "javascript" || lang === "js") {
+            return runJavaScriptLocal(code, testCases, fnName);
+        }
+
+        // Everything else goes through Piston
+        return await runWithPiston(code, lang, testCases, fnName);
+    } catch (err) {
+        return {
+            passed: 0,
+            failed: testCases.length,
+            total: testCases.length,
+            results: [],
+            error: `Execution failed: ${err.message}`,
+        };
+    }
 }

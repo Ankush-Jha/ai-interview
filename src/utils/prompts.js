@@ -266,37 +266,50 @@ export function buildCodingQuestionsPrompt(content, config) {
     const { difficulty = "mixed", count = 3 } = config || {};
 
     return {
-        system: `You generate practical coding questions with test cases. Keep it clear and simple.
-Respond with ONLY a valid JSON array.`,
-        user: `Generate ${count} coding questions from this content.
+        system: `You generate practical Python coding questions with test cases. Respond with ONLY a valid JSON array. No markdown, no explanation.`,
+        user: `Generate ${count} coding questions based on this content. Difficulty: ${difficulty}.
+
+Each question must have the user write a **Python function**.
 
 RULES:
-- Ask the user to write a function to solve a problem
-- Include 3-5 test cases per question with input and expected output
-- Difficulty: ${difficulty}
-- Solvable in 10-20 lines of code
-- Use simple language
+- Function names must be snake_case (e.g., "calculate_average", "find_max_value")
+- Test case "input" must be a VALID Python expression that can be passed to the function as a single argument
+- Test case "expected" must be a VALID Python expression (the expected return value)
+- Include 3-5 test cases per question
+- Problems should be solvable in 10-20 lines
+- starterCode must be valid Python with def and pass
 
-Return JSON array. Each item:
+CORRECT test case examples:
+  {"input": "{\"Alice\": 85, \"Bob\": 90}", "expected": "87.5", "description": "two students"}
+  {"input": "[3, 1, 4, 1, 5]", "expected": "5", "description": "list of numbers"}
+  {"input": "\"hello world\"", "expected": "\"dlrow olleh\"", "description": "reverse string"}
+  {"input": "(5, 3)", "expected": "8", "description": "add two numbers"}
+
+WRONG test case examples (DO NOT do this):
+  {"input": "Alice: 85, Bob: 90"} ← not valid Python
+  {"input": "5, 3"} ← ambiguous, use a tuple instead
+
+Return a JSON array where each item has:
 - "id": number
 - "type": "coding"
 - "mode": "coding"
-- "question": clear problem statement
-- "functionName": function name to implement (e.g., "reverseString")
-- "language": "javascript"
-- "starterCode": starter template (e.g., "function reverseString(s) {\\n  // your code here\\n}")
-- "testCases": [{ "input": "quoted args", "expected": "quoted result", "description": "what it tests" }]
+- "question": clear problem statement mentioning the function name
+- "functionName": snake_case function name
+- "language": "python"
+- "starterCode": "def function_name(param):\\n    # Write your solution here\\n    pass"
+- "testCases": [{"input": "valid python expr", "expected": "valid python expr", "description": "what it tests"}]
 - "difficulty": "easy" | "medium" | "hard"
-- "topic": related topic
-- "points": 5/10/15
-- "hints": 2-3 hint strings
+- "topic": related topic from the content
+- "points": 5 (easy) / 10 (medium) / 15 (hard)
+- "hints": array of 2-3 hint strings
+- "constraints": array of 1-2 constraint strings (e.g., "1 ≤ len(list) ≤ 1000")
 
 Content:
 """
 ${content.slice(0, 6000)}
 """
 
-ONLY return the JSON array.`,
+ONLY return the JSON array, nothing else.`,
     };
 }
 

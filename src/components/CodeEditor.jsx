@@ -4,10 +4,10 @@ import { runTests } from '../lib/code-runner'
 const Editor = lazy(() => import('@monaco-editor/react'))
 
 const LANGUAGES = [
-    { id: 'javascript', label: 'JavaScript (Node.js)', icon: 'JS' },
-    { id: 'python', label: 'Python (3.11.4)', icon: 'PY' },
-    { id: 'java', label: 'Java (17)', icon: 'JV' },
-    { id: 'cpp', label: 'C++ (17)', icon: 'C+' },
+    { id: 'python', label: 'Python (3.10)', icon: 'PY' },
+    { id: 'javascript', label: 'JavaScript (Node 18)', icon: 'JS' },
+    { id: 'java', label: 'Java (15)', icon: 'JV' },
+    { id: 'cpp', label: 'C++ (GCC 10)', icon: 'C+' },
 ]
 
 export default function CodeEditor({
@@ -108,8 +108,8 @@ export default function CodeEditor({
                     <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Question</span>
                     <div className="flex-1" />
                     <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${difficulty === 'easy' ? 'bg-emerald-500/20 text-emerald-400' :
-                            difficulty === 'hard' ? 'bg-red-500/20 text-red-400' :
-                                'bg-amber-500/20 text-amber-400'
+                        difficulty === 'hard' ? 'bg-red-500/20 text-red-400' :
+                            'bg-amber-500/20 text-amber-400'
                         }`}>{difficulty}</span>
                     <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">
                         ⭐ {points}pts
@@ -184,8 +184,8 @@ export default function CodeEditor({
                                             key={i}
                                             onClick={() => setActiveHint(i)}
                                             className={`text-xs p-2.5 rounded-lg cursor-pointer transition-colors ${i === activeHint
-                                                    ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
-                                                    : 'bg-[#11111b] text-slate-500 hover:text-slate-400'
+                                                ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                                                : 'bg-[#11111b] text-slate-500 hover:text-slate-400'
                                                 }`}
                                         >
                                             💡 Hint {i + 1}: {i <= activeHint ? hint : '(click to reveal)'}
@@ -258,7 +258,7 @@ export default function CodeEditor({
                         <span className="material-icons-round text-sm text-emerald-400">
                             {running ? 'hourglass_empty' : 'play_arrow'}
                         </span>
-                        {running ? 'Running...' : 'Run'}
+                        {running ? (selectedLang === 'javascript' ? 'Running...' : 'Running via API...') : 'Run'}
                     </button>
 
                     {/* Submit Button */}
@@ -327,8 +327,8 @@ export default function CodeEditor({
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
                                 className={`px-4 py-2 text-[11px] font-bold uppercase tracking-wider transition-colors relative ${activeTab === tab
-                                        ? 'text-slate-200'
-                                        : 'text-slate-500 hover:text-slate-400'
+                                    ? 'text-slate-200'
+                                    : 'text-slate-500 hover:text-slate-400'
                                     }`}
                             >
                                 {tab}
@@ -344,10 +344,10 @@ export default function CodeEditor({
                         {testResults && (
                             <div className="ml-auto pr-3 flex items-center gap-2">
                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${testResults.passed === testResults.total
-                                        ? 'bg-emerald-500/20 text-emerald-400'
-                                        : testResults.passed > 0
-                                            ? 'bg-amber-500/20 text-amber-400'
-                                            : 'bg-red-500/20 text-red-400'
+                                    ? 'bg-emerald-500/20 text-emerald-400'
+                                    : testResults.passed > 0
+                                        ? 'bg-amber-500/20 text-amber-400'
+                                        : 'bg-red-500/20 text-red-400'
                                     }`}>
                                     {testResults.passed}/{testResults.total} Passed
                                 </span>
