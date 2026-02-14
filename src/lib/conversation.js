@@ -34,6 +34,22 @@ export async function evaluateAndDecide(question, answer, history, context, foll
         let action = result?.action || "next_question";
         const score = result?.score ?? 5;
 
+        // Pass through repeat_question and off_topic without overriding
+        if (action === "repeat_question" || action === "off_topic") {
+            return {
+                score: 0,
+                response: result?.response || (action === "repeat_question"
+                    ? "Sure! Let me repeat that for you."
+                    : "Let's focus back on the question."),
+                action,
+                followUpQuestion: null,
+                strengths: [],
+                improvements: [],
+                keywordsFound: [],
+                keywordsMissed: [],
+            };
+        }
+
         // Force next if follow-up limit reached
         if (action === "follow_up" && followUpCount >= 2) {
             action = "next_question";

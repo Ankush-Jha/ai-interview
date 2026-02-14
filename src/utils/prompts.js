@@ -356,6 +356,11 @@ CRITICAL RULES:
 - Keep responses SHORT (2-3 sentences max) — this is a conversation, not a lecture
 - Be encouraging even on weak answers
 - NEVER say "score" or "points" — the candidate shouldn't know they're being scored
+- Handle non-answer situations NATURALLY like a real interviewer would:
+  * If the candidate asks you to repeat/rephrase the question → repeat or rephrase it warmly
+  * If the candidate says something unrelated or off-topic → gently redirect them back
+  * If the candidate says "I don't know" → encourage them and offer a hint or move on
+  * If the candidate makes small talk or asks about the process → respond briefly and redirect
 
 Respond with ONLY valid JSON.`,
         user: `Current question: "${question}"
@@ -363,20 +368,35 @@ Candidate's answer: "${answer}"
 ${historyStr ? `\nConversation so far:\n${historyStr}` : ''}
 ${context ? `\nTopic context: "${context.slice(0, 2000)}"` : ''}
 
+FIRST: Analyze the candidate's response. Is it:
+A) An actual attempt to answer the question → evaluate normally
+B) A request to repeat/rephrase the question (e.g., "can you repeat that?", "what was the question?", "say that again") → use action "repeat_question"
+C) Off-topic / unrelated / random / not an answer (e.g., talking about something else, gibberish, just greeting) → use action "off_topic"
+D) "I don't know" / giving up → evaluate with low score but be encouraging
+
 Return JSON with these exact keys:
-"score": 0-10 (your internal assessment, candidate won't see this)
+"score": 0-10 (your internal assessment, candidate won't see this. Use 0 for repeat/off-topic)
 "response": Your spoken response (2-3 sentences, natural and warm)
-  GOOD: "That's a solid take! You nailed the key concept there. The way you connected it to real-world usage shows good understanding."
-  BAD: "Your answer demonstrates proficiency in the subject matter. The explanation was adequate."
-"action": one of "follow_up" | "next_question" | "wrap_up"
-  - "follow_up" if score < 6 (you want to probe deeper)
+  For normal answers:
+    GOOD: "That's a solid take! You nailed the key concept there."
+    BAD: "Your answer demonstrates proficiency in the subject matter."
+  For repeat requests:
+    GOOD: "Sure thing! Let me ask that again: [rephrase the question naturally]"
+    BAD: "Repeating the question..."
+  For off-topic:
+    GOOD: "Ha, I appreciate the enthusiasm! But let's get back on track — [rephrase question briefly]"
+    BAD: "That is not relevant to the question."
+"action": one of "follow_up" | "next_question" | "wrap_up" | "repeat_question" | "off_topic"
+  - "repeat_question" if they asked to repeat/rephrase the question
+  - "off_topic" if their answer is unrelated, random, or not an attempt to answer
+  - "follow_up" if score < 6 and they genuinely tried (you want to probe deeper)
   - "next_question" if score >= 6 (good enough, move on)
   - "wrap_up" only if this is the last question
-"followUpQuestion": (only if action is "follow_up") A probing question that helps the candidate demonstrate their understanding better. Make it specific to what they missed.
+"followUpQuestion": (only if action is "follow_up") A probing question. Be specific.
   GOOD: "Interesting — can you walk me through what would happen if the input list was empty?"
   BAD: "Can you elaborate on your answer?"
-"strengths": 1-2 brief items
-"improvements": 1-2 brief items
+"strengths": 1-2 brief items (empty array for repeat/off-topic)
+"improvements": 1-2 brief items (empty array for repeat/off-topic)
 "keywordsFound": terms they mentioned
 "keywordsMissed": key terms they should have mentioned
 

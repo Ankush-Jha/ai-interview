@@ -253,7 +253,17 @@ export default function InterviewSession() {
             setFeedback(result.response)
             setFlowPhase('responding')
 
-            if (result.action === 'follow_up' && result.followUpQuestion) {
+            if (result.action === 'repeat_question' || result.action === 'off_topic') {
+                // Don't score or advance — just speak the AI response and re-ask
+                addMessage('ai', result.response)
+                setAiText(result.response)
+                setAIState('speaking')
+                setFlowPhase('responding')
+                await speakAndWait(result.response)
+                await new Promise(r => setTimeout(r, 1500))
+                setFlowPhase('asking')
+                speech.reset()
+            } else if (result.action === 'follow_up' && result.followUpQuestion) {
                 incrementFollowUp()
                 const txt = `${result.response}\n\n${result.followUpQuestion}`
                 addMessage('ai', txt)
