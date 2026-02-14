@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useInterview } from '../context/InterviewContext'
 import { analyzeContent, generateQuestions, detectModes, generateCodingQuestions } from '../lib/gemini'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 
 const personas = [
     { id: 'academic', icon: 'school', color: 'blue', label: 'Academic Professor', desc: 'Strict, detail-oriented, focuses on theoretical knowledge and definitions.' },
@@ -25,8 +26,9 @@ const difficultyInfo = [
 ]
 
 export default function Configuration() {
-    const { state, setSettings, setAnalysis, setQuestions, setLoading, setError, setModeFlags } = useInterview()
+    const { state, setSettings, setAnalysis, setQuestions, setLoading, setError, setModeFlags, setJobDescription } = useInterview()
     const navigate = useNavigate()
+    useDocumentTitle('Configure Interview', 'Set up your AI interview — choose persona, difficulty, and question types.')
 
     const [persona, setPersona] = useState('academic')
     const [difficulty, setDifficulty] = useState(1) // 0=Easy, 1=Medium, 2=Hard
@@ -34,6 +36,7 @@ export default function Configuration() {
     const [questionCount, setQuestionCount] = useState(5)
     const [processing, setProcessing] = useState(false)
     const [processingStep, setProcessingStep] = useState('')
+    const [jdText, setJdText] = useState(state.jobDescription || '')
 
     const documentName = state.document?.metadata?.fileName || state.document?.metadata?.title || 'No document uploaded'
     const hasDocument = !!state.document
@@ -61,6 +64,11 @@ export default function Configuration() {
             codingEnabled: selectedTypes.includes('coding'),
         }
         setSettings(settings)
+
+        // Save JD text to context
+        if (jdText.trim()) {
+            setJobDescription(jdText.trim())
+        }
 
         setProcessing(true)
         setLoading(true)
@@ -98,6 +106,7 @@ export default function Configuration() {
                     count: regularCount,
                     types: nonCodingTypes,
                     persona: settings.persona,
+                    jobDescription: jdText.trim() || null,
                 })
                 const regularArr = Array.isArray(regular) ? regular : regular.questions || []
                 allQuestions = regularArr.map(q => ({ ...q, mode: q.mode || 'text' }))
@@ -110,6 +119,7 @@ export default function Configuration() {
                     const coding = await generateCodingQuestions(state.document.text, {
                         difficulty: settings.difficulty,
                         count: codingCount,
+                        jobDescription: jdText.trim() || null,
                     })
                     const codingArr = Array.isArray(coding) ? coding : coding.questions || []
                     allQuestions = [...allQuestions, ...codingArr.map(q => ({ ...q, mode: 'coding' }))]
@@ -210,6 +220,37 @@ export default function Configuration() {
                                     </div>
                                 </button>
                             ))}
+                        </div>
+                    </section>
+
+                    {/* Section 1.5: Job Description (optional) */}
+                    <section>
+                        <div className="mb-5">
+                            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                <span className="material-icons-round text-primary text-xl">work_outline</span>
+                                Job Description
+                                <span className="text-xs font-normal text-slate-400 ml-1">(optional)</span>
+                            </h2>
+                            <p className="text-sm text-slate-500 mt-1 pl-8">Paste a job description to tailor questions to the specific role.</p>
+                        </div>
+                        <div className="pl-8">
+                            <textarea
+                                value={jdText}
+                                onChange={(e) => setJdText(e.target.value)}
+                                placeholder="Paste the job description here to get role-specific questions..."
+                                rows={4}
+                                maxLength={5000}
+                                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none bg-slate-50 placeholder:text-slate-400"
+                            />
+                            {jdText.length > 4000 && (
+                                <p className="text-xs text-amber-500 mt-1">{jdText.length}/5000 characters</p>
+                            )}
+                            {jdText.trim() && (
+                                <p className="text-xs text-emerald-600 mt-2 flex items-center gap-1">
+                                    <span className="material-icons-round text-xs">check_circle</span>
+                                    JD will be used to tailor your interview questions
+                                </p>
+                            )}
                         </div>
                     </section>
 

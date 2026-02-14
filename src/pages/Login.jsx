@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 
 const firebaseErrorMap = {
     'auth/invalid-credential': 'Invalid email or password',
@@ -19,6 +20,7 @@ export default function Login() {
     const [loading, setLoading] = useState(false)
     const { login, loginWithGoogle, loginWithGithub } = useAuth()
     const navigate = useNavigate()
+    useDocumentTitle('Sign In', 'Sign in to your AI Interviewer account.')
 
     const handleError = (err) => {
         const msg = firebaseErrorMap[err.code] || err.message

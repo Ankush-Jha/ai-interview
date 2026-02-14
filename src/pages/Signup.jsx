@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 
 const firebaseErrorMap = {
     'auth/email-already-in-use': 'An account with this email already exists',
@@ -22,6 +23,7 @@ export default function Signup() {
     const [agreed, setAgreed] = useState(false)
     const { signup, loginWithGoogle, loginWithGithub } = useAuth()
     const navigate = useNavigate()
+    useDocumentTitle('Create Account', 'Sign up for AI Interviewer — practice interviews with AI-powered feedback.')
 
     const handleError = (err) => {
         const msg = firebaseErrorMap[err.code] || err.message

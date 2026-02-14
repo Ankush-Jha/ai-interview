@@ -5,6 +5,7 @@ const initialState = {
     // Document
     document: null, // { text, metadata, chunks }
     analysis: null, // { topics, themes, difficulty, keyTerms, summary }
+    jobDescription: '', // optional JD text for tailored questions
 
     // Mode detection flags
     modeFlags: null, // { hasCoding, codingTopics, languages, hasVoice }
@@ -55,6 +56,9 @@ function interviewReducer(state, action) {
         case "SET_SETTINGS":
             return { ...state, settings: { ...state.settings, ...action.payload } };
 
+        case "SET_JOB_DESCRIPTION":
+            return { ...state, jobDescription: action.payload };
+
         case "SET_QUESTIONS":
             return {
                 ...state,
@@ -96,6 +100,13 @@ function interviewReducer(state, action) {
             return {
                 ...state,
                 currentIndex: Math.min(state.currentIndex + 1, state.questions.length - 1),
+            };
+
+        case "RESTORE_SESSION":
+            return {
+                ...state,
+                currentIndex: Math.min(action.payload.currentIndex, state.questions.length - 1),
+                evaluations: action.payload.evaluations || state.evaluations,
             };
 
         case "PREV_QUESTION":
@@ -161,6 +172,7 @@ export function InterviewProvider({ children }) {
         setEvaluation: (index, evaluation) =>
             dispatch({ type: "SET_EVALUATION", payload: { index, evaluation } }),
         nextQuestion: () => dispatch({ type: "NEXT_QUESTION" }),
+        restoreSession: (data) => dispatch({ type: "RESTORE_SESSION", payload: data }),
         prevQuestion: () => dispatch({ type: "PREV_QUESTION" }),
         setReport: (report) => dispatch({ type: "SET_REPORT", payload: report }),
         setStatus: (status) => dispatch({ type: "SET_STATUS", payload: status }),
@@ -173,6 +185,8 @@ export function InterviewProvider({ children }) {
             dispatch({ type: "SET_TEST_RESULTS", payload: { index, results } }),
         setModeFlags: (flags) =>
             dispatch({ type: "SET_MODE_FLAGS", payload: flags }),
+        setJobDescription: (text) =>
+            dispatch({ type: "SET_JOB_DESCRIPTION", payload: text }),
         addMessage: (role, text) =>
             dispatch({ type: "ADD_MESSAGE", payload: { role, text } }),
         setAIState: (state) =>

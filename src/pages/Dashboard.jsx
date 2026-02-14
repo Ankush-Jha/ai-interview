@@ -4,10 +4,13 @@ import { useInterview } from '../context/InterviewContext'
 import { useAuth } from '../context/AuthContext'
 import { parsePDF } from '../lib/pdf-parser'
 import { getInterviews } from '../lib/firestore'
+import { validateModels } from '../lib/gemini'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 
 export default function Dashboard() {
     const { state, setDocument, setError, setStatus } = useInterview()
     const { user } = useAuth()
+    useDocumentTitle('Dashboard', 'Upload documents and manage your AI interview sessions.')
     const navigate = useNavigate()
     const fileInputRef = useRef(null)
     const [dragActive, setDragActive] = useState(false)
@@ -24,6 +27,12 @@ export default function Dashboard() {
             .catch(() => setHistory([]))
             .finally(() => setHistoryLoading(false))
     }, [user?.uid])
+
+    useEffect(() => {
+        validateModels().then(ok => {
+            if (!ok) setError('AI Service seems unavailable. Check your connection.')
+        })
+    }, [setError])
 
     const recentInterviews = history.slice(0, 3)
     const avgScore = history.length > 0

@@ -89,6 +89,8 @@ export function AuthProvider({ children }) {
     const logout = async () => {
         await signOut(auth)
         setUser(null)
+        // Clear interview session data on logout
+        try { sessionStorage.removeItem('ai-interview-session') } catch { /* ignore */ }
     }
 
     // Update profile
