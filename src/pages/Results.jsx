@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useInterview } from '../context/InterviewContext'
 import { generateReport } from '../lib/gemini'
-import { generatePDFReport } from '../utils/pdfGenerator'
-import TranscriptModal from '../components/TranscriptModal'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { ResultsSkeleton } from '../components/Skeleton'
 
@@ -14,7 +12,6 @@ export default function Results() {
     const [error, setError] = useState(null)
     const [showRubric, setShowRubric] = useState(false)
     const [showBreakdown, setShowBreakdown] = useState(false)
-    const [showTranscript, setShowTranscript] = useState(false) // New
     const [copied, setCopied] = useState(false)
     useDocumentTitle('Interview Results', 'Review your AI interview performance analysis and personalized feedback.')
 
@@ -125,26 +122,6 @@ export default function Results() {
                         {' — '}
                         {settings?.difficulty} difficulty • {questions.length} questions
                     </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-3 mt-4 md:mt-0">
-                    <button
-                        onClick={() => setShowTranscript(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-all shadow-sm"
-                    >
-                        <span className="material-icons-round text-lg">chat</span>
-                        <span className="hidden sm:inline">View Transcript</span>
-                    </button>
-                    <button
-                        onClick={() => generatePDFReport({ questions, answers: state.answers, evaluations, report, settings })}
-                        className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-all shadow-sm"
-                    >
-                        <span className="material-icons-round text-lg">download</span>
-                        <span className="hidden sm:inline">Download Report</span>
-                    </button>
-                    <Link to="/" className="flex items-center gap-2 px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-all shadow-md shadow-primary/20">
-                        <span className="material-icons-round text-lg">dashboard</span>
-                        <span className="hidden sm:inline">Dashboard</span>
-                    </Link>
                 </div>
             </header>
 
@@ -403,12 +380,6 @@ export default function Results() {
                     </Link>
                 </div>
             </div>
-            {/* Transcript Modal */}
-            <TranscriptModal
-                isOpen={showTranscript}
-                onClose={() => setShowTranscript(false)}
-                history={state.conversationHistory || []}
-            />
         </div>
     )
 }

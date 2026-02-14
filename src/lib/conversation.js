@@ -8,7 +8,6 @@ import {
     generateTransition,
     generateWrapUp,
     evaluateCode,
-    generateDifficultyAdaptation,
 } from "./gemini";
 
 /**
@@ -131,15 +130,4 @@ export function getSkipResponse() {
         "All good! Moving on to the next one.",
     ];
     return messages[Math.floor(Math.random() * messages.length)];
-}
-/**
- * Decide if difficulty should change based on recent history.
- */
-export async function getDifficultyAdaptation(history, currentDifficulty) {
-    try {
-        const result = await generateDifficultyAdaptation(history, currentDifficulty);
-        return result || { action: 'maintain', newDifficulty: currentDifficulty, reason: 'Default maintain' };
-    } catch {
-        return { action: 'maintain', newDifficulty: currentDifficulty, reason: 'Error fallback' };
-    }
 }

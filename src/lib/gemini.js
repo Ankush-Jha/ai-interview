@@ -12,7 +12,6 @@ import {
     buildTransitionPrompt,
     buildIntroPrompt,
     buildWrapUpPrompt,
-    buildDifficultyAdaptation,
     humanizeResponse,
 } from "../utils/prompts";
 import { aiRateLimiter } from "../utils/rateLimiter";
@@ -333,30 +332,6 @@ export async function generateIntro(topics, difficulty, questionCount) {
 }
 
 export async function generateWrapUp(scores, topics) {
-    const prompt = buildWrapUpPrompt(scores, topics);
-    const result = await callModel(prompt.system, prompt.user, MODELS, { temperature: 0.7 });
-    return result;
-}
-
-export async function generateDifficultyAdaptation(history, currentDifficulty) {
-    const prompt = buildDifficultyAdaptation(history, currentDifficulty);
-    // Use fast model for this decision
-    const result = await callModel(prompt.system, prompt.user, DOC_MODELS, { temperature: 0.3 });
-    return result;
-}
-
-export async function validateModels() {
-    try {
-        const client = getClient();
-        await client.chatCompletion({
-            model: MODELS[0],
-            messages: [{ role: "user", content: "ping" }],
-            max_tokens: 1,
-        });
-        console.log("[AI] ✅ Model validation successful");
-        return true;
-    } catch (err) {
-        console.warn("[AI] ⚠️ Model validation failed:", err.message);
-        return false;
-    }
+    const { system, user } = buildWrapUpPrompt(scores, topics);
+    return callModel(system, user);
 }

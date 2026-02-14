@@ -271,13 +271,10 @@ ONLY return the JSON array.`,
     };
 }
 
-export function buildEvaluatePrompt(question, userAnswer, context, difficulty = "medium") {
-    const strictness = difficulty === "hard" ? "Be strict and look for depth." : difficulty === "easy" ? "Be lenient and encouraging." : "Be valid and fair.";
-
+export function buildEvaluatePrompt(question, userAnswer, context) {
     return {
         system: `You're a chill, supportive interviewer giving feedback after a practice round.
 Talk like a real human — warm, specific, encouraging. NOT a corporate report.
-Difficulty Level: ${difficulty.toUpperCase()} — ${strictness}
 Respond with ONLY valid JSON.`,
         user: `Question: "${question}"
 Candidate said: "${userAnswer}"
@@ -504,14 +501,13 @@ CRITICAL RULES:
 - Keep responses SHORT (2-3 sentences max) — this is a conversation, not a lecture
 - Be encouraging even on weak answers
 - NEVER say "score" or "points" — the candidate shouldn't know they're being scored
-507: - Handle non-answer situations NATURALLY like a real interviewer would:
-508:   * If the candidate asks you to repeat/rephrase the question → repeat or rephrase it warmly
-509:   * If the candidate says something unrelated or off-topic → gently redirect them back
-510:   * If the candidate says "I don't know" → encourage them and offer a hint or move on
-511:   * If the candidate makes small talk or asks about the process → respond briefly and redirect
-512: - MEMORY: If the candidate mentions something they said earlier (e.g., "like I said before"), ACKNOWLEDGE IT. Connect current answers to previous ones if relevant.
-513: 
-514: Respond with ONLY valid JSON.`,
+- Handle non-answer situations NATURALLY like a real interviewer would:
+  * If the candidate asks you to repeat/rephrase the question → repeat or rephrase it warmly
+  * If the candidate says something unrelated or off-topic → gently redirect them back
+  * If the candidate says "I don't know" → encourage them and offer a hint or move on
+  * If the candidate makes small talk or asks about the process → respond briefly and redirect
+
+Respond with ONLY valid JSON.`,
         user: `Current question: "${question}"
 Candidate's answer: "${answer}"
 ${historyStr ? `\nConversation so far:\n${historyStr}` : ''}
@@ -529,9 +525,12 @@ Return JSON with these exact keys:
   For normal answers:
     GOOD: "That's a solid take! You nailed the key concept there."
     BAD: "Your answer demonstrates proficiency in the subject matter."
-  For repeat requests, off-topic, etc. handle naturally.
-"tip": "Short, actionable coaching tip if score < 7 or they are stuck. Otherwise null."
-  GOOD: "Try using the STAR method (Situation, Task, Action, Result) to structure this."
+  For repeat requests:
+    GOOD: "Sure thing! Let me ask that again: [rephrase the question naturally]"
+    BAD: "Repeating the question..."
+  For off-topic:
+    GOOD: "Ha, I appreciate the enthusiasm! But let's get back on track — [rephrase question briefly]"
+    BAD: "That is not relevant to the question."
 "action": one of "follow_up" | "next_question" | "wrap_up" | "repeat_question" | "off_topic"
   - "repeat_question" if they asked to repeat/rephrase the question
   - "off_topic" if their answer is unrelated, random, or not an attempt to answer
@@ -620,30 +619,6 @@ Return JSON:
 "wrapUp": A warm closing statement (2-3 sentences). Highlight what went well and one area to work on. Be encouraging.
   GOOD: "That was a great session! You really nailed the data structures questions. If I were you, I'd spend a bit more time on recursion concepts — but overall, solid work!"
   BAD: "The assessment has concluded. Your performance was rated at 7.2/10."
-
-ONLY return the JSON.`,
-    };
-}
-
-export function buildDifficultyAdaptation(history, currentDifficulty) {
-    const recentScores = history.slice(-3).map(h => h.score || 0);
-    const avg = recentScores.length ? recentScores.reduce((a, b) => a + b, 0) / recentScores.length : 0;
-
-    return {
-        system: `You are an adaptive learning engine. Decide if the interview difficulty should change based on recent performance.
-Respond with ONLY valid JSON.`,
-        user: `Current difficulty: ${currentDifficulty}
-Recent scores (last 3): ${recentScores.join(', ')} (Average: ${avg.toFixed(1)})
-
-RULES:
-- If average >= 8.5 AND current != "hard" → increase difficulty
-- If average <= 4.0 AND current != "easy" → decrease difficulty
-- Otherwise → stay same
-
-Return JSON:
-"action": "increase" | "decrease" | "maintain"
-"newDifficulty": "easy" | "medium" | "hard"
-"reason": brief explanation
 
 ONLY return the JSON.`,
     };
