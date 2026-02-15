@@ -1,10 +1,27 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from '@/contexts/AuthContext'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { Toaster } from '@/components/ui/sonner'
+import Login from '@/pages/Login'
+import Signup from '@/pages/Signup'
+import Dashboard from '@/pages/Dashboard'
+
 export default function App() {
     return (
-        <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-            <div className="text-center space-y-4">
-                <h1 className="text-4xl font-semibold tracking-tight">Viva</h1>
-                <p className="text-muted-foreground">AI Interview Coach — Loading...</p>
-            </div>
-        </div>
+        <AuthProvider>
+            <BrowserRouter>
+                <Routes>
+                    {/* Public routes */}
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<Signup />} />
+
+                    {/* Protected routes */}
+                    <Route element={<ProtectedRoute />}>
+                        <Route path="/" element={<Dashboard />} />
+                    </Route>
+                </Routes>
+                <Toaster />
+            </BrowserRouter>
+        </AuthProvider>
     )
 }
