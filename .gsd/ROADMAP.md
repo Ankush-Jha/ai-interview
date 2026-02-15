@@ -1,6 +1,6 @@
 # ROADMAP.md
 
-> **Current Phase**: Not started
+> **Current Phase**: Phase 1 ✅ Complete
 > **Milestone**: v1.0 — Core Interview Experience
 
 ## Must-Haves (from SPEC)
@@ -18,7 +18,7 @@
 ## Phases
 
 ### Phase 1: Foundation & Design System
-**Status**: ⬜ Not Started
+**Status**: ✅ Complete
 **Objective**: Project scaffold, auth, routing, and the complete design system — so every subsequent phase builds on a polished foundation.
 **Deliverables**:
 - Vite + React + TypeScript + Tailwind + shadcn/ui project setup
