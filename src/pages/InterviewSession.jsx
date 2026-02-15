@@ -49,6 +49,8 @@ export default function InterviewSession() {
     const silenceTimerRef = useRef(null)
     const lastTranscriptRef = useRef('')
     const introSpokenRef = useRef(false)
+    const retryCountRef = useRef(0)
+    const lastAnswerRef = useRef('')
 
     // ── Derived state ──
     const currentQuestion = questions[currentIndex]
@@ -59,6 +61,9 @@ export default function InterviewSession() {
 
     // Dynamic question text — changes for follow-ups, resets on new question
     const [activeQuestionText, setActiveQuestionText] = useState(currentQuestion?.question || '')
+    const [apiStatus, setApiStatus] = useState('connected') // connected | slow | error
+    const [evalTimeoutWarning, setEvalTimeoutWarning] = useState(false)
+    const [showRetryUI, setShowRetryUI] = useState(false)
 
     // Reset active question when question index changes
     useEffect(() => {
@@ -295,7 +300,23 @@ export default function InterviewSession() {
         try {
             submitAnswer(currentIndex, text)
             addMessage('user', text)
+            lastAnswerRef.current = text
+            retryCountRef.current = 0
+            setShowRetryUI(false)
+            setEvalTimeoutWarning(false)
 
+            // Timeout warning after 15s
+            const timeoutWarn = setTimeout(() => setEvalTimeoutWarning(true), 15000)
+            const timeoutHard = setTimeout(() => {
+                setEvalTimeoutWarning(false)
+                setShowRetryUI(true)
+                setPhase('asking')
+                setAIState('idle')
+                setApiStatus('error')
+                addMessage('ai', 'The AI is taking too long to respond. You can retry or skip this question.')
+            }, 45000)
+
+            const evalStart = Date.now()
             const result = await evaluateAndDecide(
                 activeQuestionText,
                 text,
@@ -304,6 +325,13 @@ export default function InterviewSession() {
                 followUpCount,
                 isLastQuestion
             )
+            clearTimeout(timeoutWarn)
+            clearTimeout(timeoutHard)
+            setEvalTimeoutWarning(false)
+
+            // Track API response time for status indicator
+            const elapsed = Date.now() - evalStart
+            setApiStatus(elapsed > 10000 ? 'slow' : 'connected')
 
             setEvaluation(currentIndex, result)
             const action = result.action || 'next_question'
@@ -377,10 +405,26 @@ export default function InterviewSession() {
             }
         } catch (err) {
             console.error('Evaluation failed:', err)
-            addMessage('ai', 'Hmm, had a hiccup there — let\'s keep going!')
-            setAIState('idle')
-            // Auto-advance on error too
-            setTimeout(() => advanceToNextQuestion(), 1500)
+            setApiStatus('error')
+            setEvalTimeoutWarning(false)
+
+            if (retryCountRef.current < 1) {
+                // Auto-retry once
+                retryCountRef.current++
+                addMessage('ai', 'I had a small hiccup — let me try that again...')
+                if (ttsSupported) speak('Let me try that again.')
+                setTimeout(() => {
+                    setPhase('evaluating')
+                    setAIState('thinking')
+                    doSubmit(lastAnswerRef.current)
+                }, 2000)
+            } else {
+                // Show skip/retry buttons
+                addMessage('ai', 'I\'m having trouble processing that. Would you like to skip this question or try again?')
+                setAIState('idle')
+                setPhase('asking')
+                setShowRetryUI(true)
+            }
         }
     }, [currentIndex, currentQuestion, activeQuestionText, conversationHistory, followUpCount, isLastQuestion, phase, ttsSupported, speak, advanceToNextQuestion])
 
@@ -530,6 +574,12 @@ export default function InterviewSession() {
                             {formatTime(elapsed)}
                         </div>
 
+                        {/* Connection status dot */}
+                        <div className={`w-2.5 h-2.5 rounded-full transition-colors ${apiStatus === 'connected' ? 'bg-emerald-400' :
+                                apiStatus === 'slow' ? 'bg-amber-400 animate-pulse' :
+                                    'bg-red-400 animate-pulse'
+                            }`} title={`Connection: ${apiStatus}`} />
+
                         <button
                             onClick={togglePause}
                             className="p-1.5 text-slate-400 hover:text-slate-600 transition-colors rounded-lg hover:bg-slate-100"
@@ -557,9 +607,42 @@ export default function InterviewSession() {
                                     <span className="w-2 h-2 bg-primary/60 rounded-full thinking-dot" style={{ animationDelay: '0ms' }} />
                                     <span className="w-2 h-2 bg-primary/60 rounded-full thinking-dot" style={{ animationDelay: '200ms' }} />
                                     <span className="w-2 h-2 bg-primary/60 rounded-full thinking-dot" style={{ animationDelay: '400ms' }} />
-                                    <span className="text-xs text-slate-400 ml-1">Thinking...</span>
+                                    <span className="text-xs text-slate-400 ml-1">
+                                        {evalTimeoutWarning ? 'Taking longer than usual...' : 'Thinking...'}
+                                    </span>
                                 </div>
                             </div>
+                        </div>
+                    )}
+
+                    {/* Skip/Retry buttons when API fails */}
+                    {showRetryUI && (
+                        <div className="flex items-center gap-3 ml-11 chat-bubble-ai">
+                            <button
+                                onClick={() => {
+                                    setShowRetryUI(false)
+                                    retryCountRef.current = 0
+                                    setPhase('evaluating')
+                                    setAIState('thinking')
+                                    doSubmit(lastAnswerRef.current)
+                                }}
+                                className="px-4 py-2 rounded-xl text-sm font-medium bg-primary text-white hover:bg-primary/90 transition-colors flex items-center gap-1.5"
+                            >
+                                <span className="material-icons-round text-sm">refresh</span>
+                                Try Again
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowRetryUI(false)
+                                    addMessage('ai', 'No worries — let\'s move on!')
+                                    setApiStatus('connected')
+                                    setTimeout(() => advanceToNextQuestion(), 500)
+                                }}
+                                className="px-4 py-2 rounded-xl text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors flex items-center gap-1.5"
+                            >
+                                <span className="material-icons-round text-sm">skip_next</span>
+                                Skip Question
+                            </button>
                         </div>
                     )}
 
