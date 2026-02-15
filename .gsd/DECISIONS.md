@@ -1,46 +1,33 @@
-# DECISIONS.md — Architectural Decision Records
+# DECISIONS.md — Architecture Decision Records
 
-> Log of key technical decisions and their rationale.
+## ADR-001: Free-Tier-Only AI Stack
 
-## ADR-001: Free-Tier AI via HuggingFace Model Chain
-**Date**: 2026-02-15
-**Decision**: Use HuggingFace Inference API (free tier) with 5-model fallback chain instead of paid APIs (OpenAI, Anthropic)
-**Rationale**: Product is free for students. HF free tier provides sufficient inference for MVP. Model chain (DeepSeek → Qwen → Llama → Mixtral → Phi) ensures resilience.
-**Trade-off**: Slower inference, less consistent quality vs GPT-4. Acceptable for student practice tool.
+**Date**: 2026-02-16
+**Status**: Accepted
+**Context**: Need AI inference without paid API costs.
+**Decision**: Use Groq API (free tier) for all LLM calls. Provides fast inference with Llama 3 and Mixtral models at zero cost.
+**Consequences**: Rate-limited. May need fallback strategy if free tier is exhausted.
 
-## ADR-002: Browser-Based Code Execution
-**Date**: 2026-02-15
-**Decision**: Run test cases in-browser (no server-side sandbox at scale)
-**Rationale**: Server-side code execution at scale requires containers/VMs = cost. Browser sandbox is free and sufficient for test case verification.
-**Trade-off**: Limited to JavaScript execution. Can't run compiled languages server-side without infrastructure cost.
+## ADR-002: Design System — shadcn/ui + Linear Aesthetic
 
-## ADR-003: Web Speech API for Voice
-**Date**: 2026-02-15
-**Decision**: Use Web Speech API (browser-native) for both TTS and STT
-**Rationale**: Free, no API keys needed. Chrome has best support.
-**Trade-off**: Chrome-only reliability. Firefox/Safari support is limited. Acceptable for MVP.
+**Date**: 2026-02-16
+**Status**: Accepted
+**Context**: Need premium UI without custom design system from scratch.
+**Decision**: shadcn/ui components + Tailwind CSS + Inter font. Neutral palette, one accent color, generous whitespace. No gradients, glassmorphism, or flashy effects.
+**Consequences**: Consistent, maintainable design. Components are copy-paste, fully customizable.
 
-## ADR-004: Open-Source Problem Sets
-**Date**: 2026-02-15
-**Decision**: Use open-source DSA problem sets instead of LeetCode API/scraping
-**Rationale**: LeetCode API is not public. Scraping violates ToS. Open-source alternatives (Neetcode, freeCodeCamp datasets) are freely available.
-**Trade-off**: Smaller problem bank. Can expand over time.
+## ADR-003: Firebase Serverless Backend
 
----
+**Date**: 2026-02-16
+**Status**: Accepted
+**Context**: Single developer, need auth + database without managing servers.
+**Decision**: Firebase Auth + Cloud Firestore + Firebase Hosting. Cloud Functions only if needed.
+**Consequences**: Fast to ship. Free tier limits apply (50K reads/day, 20K writes/day).
 
-## Phase 1 Decisions
+## ADR-004: Client-Side PDF Parsing
 
-**Date:** 2026-02-15
-
-### Scope
-- Phase 1 includes BOTH: verify/fix the 9 existing changes AND add UX polish (thinking animations, typing indicators, transition animations)
-- This is a full "make it feel real" pass, not just bug fixes
-
-### Approach
-- Test with live HuggingFace models (no mock mode)
-- If HF free tier proves unreliable, pivot to other free API alternatives (Groq, Together.ai free tier, etc.)
-- Chrome-only voice support is acceptable for Phase 1
-
-### Constraints
-- Must rely on API — no offline/mock mode needed
-- Keep it free — no paid API subscriptions
+**Date**: 2026-02-16
+**Status**: Accepted
+**Context**: Need to extract text from uploaded PDFs.
+**Decision**: Use pdf.js client-side. No server upload needed for text extraction.
+**Consequences**: Works offline. Large PDFs may be slow. No OCR for scanned images (V1 limitation).

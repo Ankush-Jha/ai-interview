@@ -1,65 +1,71 @@
 # ROADMAP.md
 
-> **Current Phase**: Phase 1
-> **Milestone**: v1.0 — Production-Ready AI Interviewer
+> **Current Phase**: Not started
+> **Milestone**: v1.0 — Core Interview Experience
 
 ## Must-Haves (from SPEC)
-- [x] PDF upload → AI question generation
-- [x] Conversational AI orb with voice I/O
-- [x] Follow-up questions and depth probing
-- [ ] Open-source coding problem integration with test cases
-- [ ] Polished UX (no rough edges, loading states, error handling)
-- [ ] Reliable feedback reports with study recommendations
+
+- [ ] PDF upload → parse → knowledge extraction
+- [ ] Configurable interview setup (persona, difficulty, question types)
+- [ ] Real-time Socratic AI interview with adaptive difficulty
+- [ ] Voice input (STT) and voice output (TTS)
+- [ ] Per-question scoring and feedback
+- [ ] End-of-session debrief report
+- [ ] Firebase Auth (multi-user)
+- [ ] Session history with progress tracking
+- [ ] Premium Linear-style UI
 
 ## Phases
 
-### Phase 1: Conversational Flow Polish
-**Status**: ✅ Complete
-**Objective**: Make the AI interviewer feel like a real conversation — no buttons, no pauses, just natural voice flow
-**Requirements**: REQ-03, REQ-04, REQ-05, REQ-07, REQ-08, REQ-09
-
-Key deliverables:
-- Intro greeting (getIntro)
-- Auto-advance between questions (no Next button)
-- Silence detection auto-submit (3s)
-- Wrap-up summary (getWrapUp)
-- Phase transitions between topics
-- Follow-up question flow
-- Hide scores during session
-
-### Phase 2: Coding Interview Engine
-**Status**: 🟡 In Progress
-**Objective**: Full coding interview experience with DSA problems, test case runner, AI code review, AND a premium interview page redesign
-**Requirements**: REQ-10, REQ-11, REQ-12
-
-Key deliverables:
-- **Interview page UI redesign** (dark theme, glassmorphism, premium feel)
-- Open-source DSA problem bank (categorized by topic/difficulty)
-- Monaco editor with syntax highlighting and autocomplete
-- In-browser test case execution with pass/fail results
-- AI evaluation of code quality, efficiency, and correctness
-- Timer and hint system for coding questions
-
-### Phase 3: Adaptive Intelligence
+### Phase 1: Foundation & Design System
 **Status**: ⬜ Not Started
-**Objective**: AI adapts interview difficulty and topic selection in real-time based on performance
-**Requirements**: REQ-06, REQ-14
+**Objective**: Project scaffold, auth, routing, and the complete design system — so every subsequent phase builds on a polished foundation.
+**Deliverables**:
+- Vite + React + TypeScript + Tailwind + shadcn/ui project setup
+- Design tokens, theme config, base components
+- Firebase Auth (email + Google sign-in)
+- App shell: sidebar, header, responsive layout
+- Routing: Dashboard, Configure, Session, Results, History, Settings
+- Auth-protected routes
 
-Key deliverables:
-- Real-time difficulty adjustment (go deeper on strong topics, pivot on weak)
-- Topic mastery detection across the session
-- Personalized study recommendations in report
-- Question bank expansion based on detected gaps
-
-### Phase 4: Production Polish
+### Phase 2: Document Pipeline
 **Status**: ⬜ Not Started
-**Objective**: Ship-quality UX, performance, reliability, and onboarding
-**Requirements**: REQ-17, REQ-18
+**Objective**: Students can upload PDFs and the system extracts, analyzes, and structures the content for interview generation.
+**Deliverables**:
+- PDF upload UI with drag-and-drop
+- Client-side PDF parsing (pdf.js)
+- Content analysis via Groq API (topic extraction, concept mapping, Bloom's level tagging)
+- Document storage in Firestore (metadata + extracted text)
+- Dashboard shows uploaded documents
 
-Key deliverables:
-- Onboarding flow for first-time users
-- Loading states, error handling, edge cases
-- Performance optimization (lazy loading, code splitting)
-- Clean up .next/ leftover, deduplicate deps
-- Mobile-responsive interview experience
-- Landing page / marketing
+### Phase 3: Interview Engine
+**Status**: ⬜ Not Started
+**Objective**: The core Socratic interview — AI generates questions from parsed content, conducts a conversational session, evaluates answers in real-time, and adapts difficulty.
+**Deliverables**:
+- Interview configuration UI (persona, difficulty, question count, types)
+- Question generation via Groq API (contextual, multi-type)
+- Conversational interview flow (one question at a time, follow-ups)
+- Real-time answer evaluation with scoring + feedback
+- Adaptive difficulty (ramp up / remediate based on performance)
+- Session state management
+
+### Phase 4: Voice Integration
+**Status**: ⬜ Not Started
+**Objective**: Hands-free interviewing — students speak answers, AI speaks questions. Natural, voice-first experience.
+**Deliverables**:
+- Web Speech API integration for speech-to-text (student answers)
+- Text-to-speech for AI interviewer (browser TTS or free API)
+- Voice controls (start/stop recording, replay)
+- Fallback to text mode when voice unavailable
+- Audio visual indicators (waveform, recording state)
+
+### Phase 5: Reports, History & Polish
+**Status**: ⬜ Not Started
+**Objective**: Comprehensive session reports, cross-session progress tracking, and final UI polish.
+**Deliverables**:
+- End-of-session debrief (overall score, strengths, growth areas, recommendations)
+- Per-question breakdown with linked lecture excerpts
+- Session history list with filtering and search
+- Cross-session progress tracking (score trends, topic mastery)
+- PDF report export
+- Final UI polish, accessibility audit, performance optimization

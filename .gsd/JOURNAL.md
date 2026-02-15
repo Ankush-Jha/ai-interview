@@ -1,21 +1,10 @@
-# JOURNAL.md — Development Journal
+# JOURNAL.md — Development Log
 
-> Session-by-session log of progress, learnings, and context.
+## 2026-02-16 — Project Initialized
 
-## 2026-02-15 — Project Initialization
-
-**What happened:**
-- Mapped existing codebase (136 source files, React 19 + Express + HuggingFace + Firebase)
-- Wrote SPEC.md, REQUIREMENTS.md, ROADMAP.md
-- Identified 7 technical debt items
-- Phase 1 (Conversational Flow Polish) already partially implemented from previous sessions
-
-**Key learnings:**
-- HuggingFace free tier has intermittent downtime — 5-model fallback chain helps
-- Chrome Web Speech API has TTS bugs requiring cancel-before-speak workaround
-- Follow-up logic was broken because `doSubmit` ignored AI action types — fixed
-
-**Context for next session:**
-- Phase 1 is mostly done (9 fixes implemented in InterviewSession.jsx)
-- Need to verify all 9 fixes work end-to-end
-- Phase 2 (Coding Interview Engine) is next major milestone
+- Deleted previous codebase for a clean start
+- Completed GSD deep questioning
+- Created SPEC.md (finalized) and ROADMAP.md (5 phases)
+- Tech stack: React + TS + Vite + Tailwind + shadcn/ui + Groq + Firebase
+- Design direction: Linear.app × Arc × Vercel aesthetic
+- Ready for Phase 1 planning

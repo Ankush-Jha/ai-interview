@@ -1,24 +1,26 @@
-# STATE.md
+# STATE.md — Project Memory
 
-> Project tracking and session state
+> **Last Updated**: 2026-02-16
+> **Current Phase**: Not started
+> **Session**: Fresh initialization
 
-## Current Position
-- **Phase**: 2 (in progress)
-- **Task**: Plan 2.4 — Interview Session UI Redesign
-- **Status**: Planning complete, ready for execution
+## Active Context
 
-## Last Session Summary
-Phase 1 completed (3 plans, 7 tasks, 18/18 must-haves verified).
-Phase 2 planning done — 4 plans created:
-- Plan 2.1: Curated DSA Problem Bank (wave 2)
-- Plan 2.2: End-to-End Coding Flow Polish (wave 2)
-- Plan 2.3: Coding UX — Timer, Hints, Results (wave 3)
-- Plan 2.4: Interview Session UI Redesign (wave 1 — priority)
+- Project: AI Socratic Interview Coach
+- Stack: React + TypeScript + Vite + Tailwind + shadcn/ui + Groq + Firebase
+- Status: Spec finalized, roadmap created, ready for Phase 1 planning
 
-## Next Steps
-1. Execute Plan 2.4: Full interview page redesign (dark theme, glassmorphism)
-2. Execute Plans 2.1 + 2.2: DSA bank and coding flow
-3. Execute Plan 2.3: Timer, hints, results polish
+## Decisions Made
+
+- Free-tier only: Groq for AI, Web Speech API for voice, Firebase Spark plan
+- Design: Linear.app-style — neutral palette, Inter font, shadcn/ui, zero gradients
+- V1 scope excludes: webcam, avatar, Anki, multi-language, filler detection
 
 ## Blockers
-None
+
+None.
+
+## Notes
+
+- Previous codebase was deleted for a clean start
+- `.env.local` preserved with existing Firebase credentials

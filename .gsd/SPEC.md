@@ -3,39 +3,73 @@
 > **Status**: `FINALIZED`
 
 ## Vision
-A free, voice-first AI interviewer for students. Upload your resume/notes PDF, pick your interview style, and a conversational AI orb conducts a realistic mock interview — asking probing follow-ups, opening coding problems with test-case verification, gauging depth of understanding across topics, and delivering actionable feedback. Feels like sitting across from a real senior engineer, not a quiz app.
+
+An AI-powered Socratic oral exam coach that lets students upload their lecture materials (PDFs, notes), then conducts an adaptive, conversational mock interview — evaluating responses in real-time, probing weak spots, and delivering a detailed performance debrief. Built for students preparing for vivas, oral exams, and deep subject mastery.
 
 ## Goals
-1. **Natural conversational interview** — AI orb speaks, listens, probes deeper with follow-ups, detects topic mastery vs gaps
-2. **Coding interview mode** — Open-source LeetCode-style DSA problems with in-browser editor, test case execution, and AI-verified solutions
-3. **Depth assessment** — AI adapts questions based on answers, going deeper on strong topics and pivoting on weak ones
-4. **Actionable feedback** — Post-interview report with scores, strengths, improvement areas, and specific study recommendations
-5. **Production-ready product** — Real users (students), free tier, reliable, polished UX
 
-## Non-Goals (Out of Scope)
-- Payment/subscriptions — entirely free
-- Multiplayer / mock with friends
-- Native mobile app (web-only, mobile-responsive)
-- Proprietary LeetCode API integration (use open-source problem sets)
-- Enterprise features (team management, analytics dashboards)
+1. **Core Interview Loop** — Upload material → AI parses it → configurable Socratic interview → real-time scoring → session debrief
+2. **Adaptive Intelligence** — Dynamically adjust difficulty based on student performance (ramp up on strong answers, remediate on weak ones)
+3. **Voice-First Interaction** — Natural voice-based conversation with the AI interviewer using free speech APIs
+4. **Multi-User Platform** — Firebase Auth, per-user history, progress tracking across sessions
+5. **Premium Design** — Linear.app-quality UI with shadcn/ui, clean typography, generous whitespace, zero flashiness
+
+## Non-Goals (Out of Scope — V1)
+
+- Webcam / body language analysis
+- AI avatar (visual character)
+- Anki flashcard export
+- Multi-language support
+- Study group sharing
+- Mobile native apps
+- Filler-word detection / speech coaching
+- Pre-interview warm-up quiz
 
 ## Users
-Students preparing for technical interviews — CS undergrads, bootcamp grads, career switchers. Entry to mid-level. They want realistic practice without paying for expensive platforms.
+
+**University students** preparing for oral exams, vivas, and interviews. They upload their lecture PDFs/notes and want realistic, challenging practice with instant feedback. Multi-user — each student has their own account and history.
+
+## Tech Stack
+
+| Layer | Choice | Rationale |
+|-------|--------|-----------|
+| Frontend | React + TypeScript + Vite | Fast dev, strong typing |
+| Styling | Tailwind CSS + shadcn/ui | Premium components, Linear-style aesthetic |
+| AI | Groq API (free tier) | Fast inference, free Llama/Mixtral models |
+| Voice STT | Web Speech API | Free, built into browsers |
+| Voice TTS | Web Speech API / free alternative | Zero-cost text-to-speech |
+| PDF Parsing | pdf.js (client-side) | Free, no server needed |
+| Auth | Firebase Auth | Google/email sign-in |
+| Database | Cloud Firestore | Serverless, scales, free tier |
+| Hosting | Firebase Hosting | Free tier, CDN |
+| Backend | Firebase Cloud Functions (if needed) | Serverless, pay-per-use |
+
+## Design System
+
+- **Aesthetic**: Linear.app × Arc browser × Vercel dashboard
+- **Palette**: Neutral/sophisticated with one subtle accent color
+- **Typography**: Inter or system fonts, strong hierarchy
+- **Spacing**: Extremely generous whitespace
+- **Depth**: Subtle soft borders, minimal shadows
+- **Icons**: Lucide (clean, functional)
+- **States**: Perfect hover, transitions, loading states, micro-interactions
+- **Responsive**: Mobile-first, fully accessible (ARIA, keyboard nav)
+- **BANNED**: Gradients, glassmorphism, neumorphism, neon, glows, heavy shadows, overly rounded corners, cluttered layouts
 
 ## Constraints
-- **Cost**: Zero ongoing cost for AI — use free-tier HuggingFace Inference API with model chain fallback
-- **Coding problems**: Open-source/free DSA problem sets only (no LeetCode scraping)
-- **Code execution**: Browser-based test case runner (no server-side sandboxing for user code at scale)
-- **Voice**: Web Speech API only (no paid TTS/STT services)
-- **Auth**: Firebase free tier (Spark plan)
-- **Database**: Firestore free tier
+
+- All AI APIs must be **free tier** (Groq, no paid OpenAI)
+- All voice APIs must be **free** (Web Speech API or equiv)
+- Firebase free tier (Spark plan)
+- Single developer, fast iteration
+- Must work in modern browsers (Chrome, Firefox, Safari)
 
 ## Success Criteria
-- [ ] User can upload PDF and start interview within 60 seconds
-- [ ] AI asks 5-10 questions with natural follow-ups and topic transitions
-- [ ] Coding questions include a Monaco editor with runnable test cases
-- [ ] AI voice output works reliably on Chrome (primary target)
-- [ ] Silence detection auto-submits voice answers
-- [ ] Post-interview report shows per-question scores and study recommendations
-- [ ] Session history persists across logins
-- [ ] App loads under 3 seconds on broadband
+
+- [ ] Student can upload a PDF and start an AI interview within 60 seconds
+- [ ] AI asks contextual questions based on the uploaded material
+- [ ] Interview adapts difficulty based on student performance
+- [ ] Voice input/output works for hands-free interviewing
+- [ ] End-of-session debrief with score breakdown and growth areas
+- [ ] Multiple users can sign up, log in, and see their session history
+- [ ] UI feels premium — passes the "would a designer be proud?" test
