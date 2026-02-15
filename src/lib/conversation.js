@@ -50,13 +50,13 @@ export async function evaluateAndDecide(question, answer, history, context, foll
             };
         }
 
-        // Force next if follow-up limit reached
-        if (action === "follow_up" && followUpCount >= 2) {
+        // Force next if follow-up limit reached (max 3 deep dives per question)
+        if (action === "follow_up" && followUpCount >= 3) {
             action = "next_question";
         }
 
-        // Force next if score is good
-        if (score >= 6 && action === "follow_up") {
+        // Only skip follow-ups if answer was excellent
+        if (score >= 8 && action === "follow_up") {
             action = "next_question";
         }
 

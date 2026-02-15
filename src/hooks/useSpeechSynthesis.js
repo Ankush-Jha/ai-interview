@@ -2,13 +2,16 @@ import { useState, useCallback, useEffect, useRef } from "react";
 
 /**
  * Custom hook for Web Speech API speech synthesis (voice output).
- * Cross-browser support.
+ * Includes workarounds for Chrome bugs:
+ *  - cancel-before-speak race condition
+ *  - speechSynthesis freezing after long pauses
  */
 export function useSpeechSynthesis() {
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [voices, setVoices] = useState([]);
     const [error, setError] = useState(null);
     const utteranceRef = useRef(null);
+    const voicesRef = useRef([]);
 
     const isSupported =
         typeof window !== "undefined" && "speechSynthesis" in window;
@@ -19,12 +22,23 @@ export function useSpeechSynthesis() {
         const loadVoices = () => {
             const available = window.speechSynthesis.getVoices();
             setVoices(available);
+            voicesRef.current = available;
         };
 
         loadVoices();
         window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
 
+        // Chrome bug: speechSynthesis can freeze if idle too long.
+        // Periodically resume to keep it alive.
+        const keepAlive = setInterval(() => {
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.pause();
+                window.speechSynthesis.resume();
+            }
+        }, 10000);
+
         return () => {
+            clearInterval(keepAlive);
             window.speechSynthesis.removeEventListener("voiceschanged", loadVoices);
             window.speechSynthesis.cancel();
         };
@@ -36,35 +50,50 @@ export function useSpeechSynthesis() {
                 setError("Speech synthesis not supported.");
                 return;
             }
+            if (!text?.trim()) return;
 
+            // Cancel any current speech
             window.speechSynthesis.cancel();
 
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = options.rate ?? 1;
-            utterance.pitch = options.pitch ?? 1;
-            utterance.volume = options.volume ?? 1;
+            // Chrome workaround: small delay after cancel() to avoid race condition
+            // where the new utterance gets immediately cancelled.
+            setTimeout(() => {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = options.rate ?? 1.05;
+                utterance.pitch = options.pitch ?? 1;
+                utterance.volume = options.volume ?? 1;
 
-            if (options.voice) {
-                utterance.voice = options.voice;
-            } else {
-                // Prefer a natural English voice
-                const preferred = voices.find(
-                    (v) => v.lang.startsWith("en") && v.name.includes("Google")
-                ) || voices.find((v) => v.lang.startsWith("en"));
-                if (preferred) utterance.voice = preferred;
-            }
+                // Use latest voices from ref (avoids stale closure)
+                const currentVoices = voicesRef.current;
+                if (options.voice) {
+                    utterance.voice = options.voice;
+                } else if (currentVoices.length > 0) {
+                    const preferred =
+                        currentVoices.find(
+                            (v) => v.lang.startsWith("en") && v.name.includes("Google")
+                        ) || currentVoices.find((v) => v.lang.startsWith("en"));
+                    if (preferred) utterance.voice = preferred;
+                }
 
-            utterance.onstart = () => setIsSpeaking(true);
-            utterance.onend = () => setIsSpeaking(false);
-            utterance.onerror = (e) => {
-                setError(`Speech error: ${e.error}`);
-                setIsSpeaking(false);
-            };
+                utterance.onstart = () => {
+                    setIsSpeaking(true);
+                };
+                utterance.onend = () => {
+                    setIsSpeaking(false);
+                };
+                utterance.onerror = (e) => {
+                    // "interrupted" and "canceled" are expected when we cancel speech
+                    if (e.error !== "interrupted" && e.error !== "canceled") {
+                        setError(`Speech error: ${e.error}`);
+                    }
+                    setIsSpeaking(false);
+                };
 
-            utteranceRef.current = utterance;
-            window.speechSynthesis.speak(utterance);
+                utteranceRef.current = utterance;
+                window.speechSynthesis.speak(utterance);
+            }, 50);
         },
-        [isSupported, voices]
+        [isSupported]
     );
 
     const stop = useCallback(() => {

@@ -76,6 +76,33 @@ export default function History() {
                 </div>
             )}
 
+            {/* Progress Chart */}
+            {history.length > 1 && (
+                <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm mb-8">
+                    <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                        <span className="material-icons-round text-primary">trending_up</span>
+                        Performance Trend (Last 10 Sessions)
+                    </h2>
+                    <div className="h-48 flex items-end gap-3 px-2">
+                        {history.slice(0, 10).reverse().map((h, i) => (
+                            <div key={i} className="flex-1 flex flex-col justify-end group relative h-full">
+                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none mb-2 z-10 whitespace-nowrap">
+                                    {h.score}% • {h.documentName?.substring(0, 15) || 'Interview'}...
+                                </div>
+                                <div
+                                    className={`w-full rounded-t-md transition-all duration-500 ease-out group-hover:opacity-80 ${h.score >= 80 ? 'bg-emerald-400' : h.score >= 60 ? 'bg-amber-400' : 'bg-red-400'
+                                        }`}
+                                    style={{ height: `${Math.max(h.score, 5)}%` }}
+                                ></div>
+                                <div className="text-[10px] text-center text-slate-400 mt-2 truncate w-full">
+                                    {new Date(h.date).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* History Table */}
             {history.length > 0 ? (
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">

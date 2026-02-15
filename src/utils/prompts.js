@@ -484,6 +484,49 @@ ONLY return the JSON.`,
     };
 }
 
+export function buildVoiceEvalPrompt(question, transcript, context) {
+    return {
+        system: `You're evaluating a SPOKEN answer — the text you see is a speech-to-text transcription.
+Expect imperfect grammar, filler words, fragmented sentences, and repetition. This is NORMAL for spoken language.
+Judge ONLY the knowledge and reasoning demonstrated, NOT the quality of speech or transcription.
+Be generous — spoken answers naturally have less structure than written ones.
+Respond with ONLY valid JSON.`,
+        user: `Question: "${question}"
+Spoken answer (transcription): "${transcript}"
+${context ? `Topic context: "${sanitizeContent(context).slice(0, 2000)}"` : ""}
+
+VOICE-SPECIFIC SCORING RULES:
+- Spoken answers are naturally less structured — that's OK, don't penalize
+- Filler words ("um", "uh", "like", "so", "basically") are NORMAL in speech — completely ignore them
+- Repeated words/phrases are stuttering artifacts — collapse and interpret charitably
+- Half-sentences that trail off often mean the speaker self-corrected — look for the correction
+- If they talked through their reasoning step-by-step (even messily), that's a STRENGTH
+- Verbal reasoning ("so if I think about it... X means... that would make Y...") shows understanding
+
+SCORING RUBRIC:
+- 1-3: Couldn't identify the topic at all, or completely wrong
+- 4-5: Got the general area, but key details wrong or missing
+- 6-7: Core concept correct with typical verbal messiness
+- 8-9: Thorough explanation even in spoken form — impressive
+- 10: Would ace a real verbal interview — clear, correct, confident
+
+Return JSON:
+"score": 0-10 (remember: spoken answers ≥6 if the core idea is right)
+"reasoning": 1 sentence explaining why
+"feedback": 2-3 sentences, warm and encouraging. Acknowledge it was spoken.
+  GOOD: "Great verbal explanation! You walked through the concept clearly — I could tell you really understand how it works."
+  BAD: "The transcription was unclear and lacked proper structure."
+"modelAnswer": How a confident speaker would answer this in 2-3 sentences
+"strengths": 2-3 items
+"improvements": 2-3 items (frame as interview tips, not transcription fixes)
+"keywordsFound": terms they mentioned
+"keywordsMissed": terms they should've mentioned
+"voiceConfidence": "high" | "medium" | "low" (based on how clearly they explained)
+
+ONLY return the JSON.`,
+    };
+}
+
 // ─── Conversational Interview Prompts ────────────────────────────────────────
 
 export function buildConversationalEvalPrompt(question, answer, history, context) {
@@ -622,5 +665,42 @@ Return JSON:
 
 ONLY return the JSON.`,
     };
+}
+
+// ─── Real-time coaching & Advanced Features ──────────────────────────────────
+
+export function buildCoachingTipPrompt(question, partialAnswer) {
+    return {
+        system: `You're a helpful interview coach. Give a TINY hint to help the candidate improve their answer while they type.
+Respond with ONLY a JSON object.`,
+        user: `Question: "${question}"
+Candidate is typing: "${partialAnswer}"
+
+Return JSON:
+"tip": A very short, specific nudge (max 10 words).
+  GOOD: "Mention time complexity here."
+  GOOD: "Don't forget to handle edge cases."
+  BAD: "You should consider discussing the Big O notation."
+
+ONLY return the JSON.`,
+    };
+}
+
+export function buildAdaptiveQuestionsPrompt(previousQuestions, correctCount, totalCount, config) {
+    // Determine new difficulty based on performance
+    const currentDifficulty = config.difficulty || 'medium';
+    let nextDifficulty = currentDifficulty;
+
+    // Simple adaptive logic (can be refined)
+    if (totalCount > 0) {
+        const accuracy = correctCount / totalCount;
+        if (accuracy > 0.8 && currentDifficulty === 'easy') nextDifficulty = 'medium';
+        if (accuracy > 0.8 && currentDifficulty === 'medium') nextDifficulty = 'hard';
+        if (accuracy < 0.4 && currentDifficulty === 'hard') nextDifficulty = 'medium';
+        if (accuracy < 0.4 && currentDifficulty === 'medium') nextDifficulty = 'easy';
+    }
+
+    // Reuse buildQuestionsPrompt with new difficulty
+    return buildQuestionsPrompt(null, { ...config, difficulty: nextDifficulty, count: 1 });
 }
 

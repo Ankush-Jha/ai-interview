@@ -368,6 +368,56 @@ body {
   animation: fade-in 0.4s ease-out forwards;
 }
 
+/* ─── Scale In ─── */
+@keyframes scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out forwards;
+}
+
+/* ─── Card Hover Lift ─── */
+.card-hover {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card-hover:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+/* ─── Range Input Accent ─── */
+input[type="range"] {
+  accent-color: #13ecc8;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #13ecc8;
+  cursor: pointer;
+  border: 3px solid white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: #e2e8f0;
+}
+
 /* ─── Toggle Switch (Configuration Page) ─── */
 .toggle-checkbox {
   right: 0;
@@ -426,4 +476,185 @@ body {
   0% {
     stroke-dasharray: 0, 100;
   }
+}
+
+@media print {
+
+  /* Hide navigation and interactive elements */
+  nav,
+  aside,
+  header,
+  .print\:hidden,
+  button,
+  [role="tablist"] {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    font-size: 11pt;
+  }
+
+  /* Show main content area fully */
+  #root {
+    display: block !important;
+  }
+
+  .p-6,
+  .lg\:p-10 {
+    position: relative;
+    width: 100%;
+    margin: 0;
+    padding: 16px !important;
+  }
+
+  /* Expand all collapsible sections */
+  [data-collapsed] {
+    display: block !important;
+    max-height: none !important;
+  }
+
+  /* Ensure all tabs content shows in print */
+  [role="tabpanel"] {
+    display: block !important;
+  }
+
+  /* Ensure backgrounds and colors print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Avoid page breaks inside cards */
+  .rounded-2xl,
+  .rounded-xl {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
+/* ─── Chat Bubble Entrance Animations ─── */
+@keyframes slide-in-left {
+  0% {
+    opacity: 0;
+    transform: translateX(-16px) scale(0.97);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes slide-in-right {
+  0% {
+    opacity: 0;
+    transform: translateX(16px) scale(0.97);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.chat-bubble-ai {
+  animation: slide-in-left 0.3s ease-out forwards;
+}
+
+.chat-bubble-user {
+  animation: slide-in-right 0.3s ease-out forwards;
+}
+
+/* ─── Thinking Indicator Glow ─── */
+@keyframes thinking-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(19, 236, 200, 0.15);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(19, 236, 200, 0.35);
+  }
+}
+
+.thinking-indicator {
+  animation: thinking-glow 2s ease-in-out infinite;
+}
+
+@keyframes dot-pulse {
+
+  0%,
+  80%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.thinking-dot {
+  animation: dot-pulse 1.4s ease-in-out infinite;
+}
+
+/* ─── Topic Divider ─── */
+@keyframes divider-enter {
+  0% {
+    opacity: 0;
+    transform: scaleX(0.3);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+.topic-divider {
+  animation: divider-enter 0.5s ease-out forwards;
+}
+
+/* ─── Silence Countdown Ring ─── */
+@keyframes countdown-ring {
+  0% {
+    stroke-dasharray: 100, 100;
+  }
+
+  100% {
+    stroke-dasharray: 0, 100;
+  }
+}
+
+.countdown-ring-circle {
+  animation: countdown-ring 3s linear forwards;
+  transform-origin: center;
+  transform: rotate(-90deg);
+}
+
+/* ─── Accessibility ─── */
+*:focus-visible {
+  outline: 2px solid #13ecc8;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.skip-to-content {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 9999;
+  padding: 8px 16px;
+  background: #13ecc8;
+  color: #0f172a;
+  font-weight: 600;
+  border-radius: 0 0 8px 0;
+}
+
+.skip-to-content:focus {
+  left: 0;
 }

@@ -1,78 +1,144 @@
-/**
- * SessionSidebar — Right column: progress steps, live feedback, and timer.
- */
-export default function SessionSidebar({ questions, currentIndex, evaluations, progress, feedback, elapsedTime, formatTime }) {
+import { useMemo } from 'react'
+
+const scoreColor = (score) => {
+    if (score >= 7) return 'bg-emerald-500'
+    if (score >= 4) return 'bg-amber-500'
+    return 'bg-red-500'
+}
+
+const scoreTextColor = (score) => {
+    if (score >= 7) return 'text-emerald-600'
+    if (score >= 4) return 'text-amber-600'
+    return 'text-red-500'
+}
+
+export default function SessionSidebar({ questions, currentIndex, evaluations, progress, elapsedTime, formatTime }) {
+    const answeredCount = useMemo(
+        () => Object.keys(evaluations || {}).length,
+        [evaluations]
+    )
+
+    const avgScore = useMemo(() => {
+        const evals = Object.values(evaluations || {}).filter(Boolean)
+        if (evals.length === 0) return null
+        return Math.round(evals.reduce((s, e) => s + (e?.score || 0), 0) / evals.length)
+    }, [evaluations])
+
     return (
-        <div className="lg:w-80 flex-shrink-0 flex flex-col gap-5">
-
-            {/* Progress Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-                <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-slate-900 text-sm">Session Progress</h3>
-                    <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{progress}%</span>
+        <aside className="w-72 bg-white rounded-2xl border border-slate-200/80 p-5 h-fit sticky top-8 space-y-5">
+            {/* Timer */}
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <span className="material-icons-round text-primary text-lg">timer</span>
+                    <span className="text-sm font-medium text-slate-500">Time</span>
                 </div>
-                <div className="w-full bg-slate-100 h-2 rounded-full mb-5 overflow-hidden">
-                    <div className="bg-primary h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${progress}%` }}></div>
-                </div>
+                <span className="text-lg font-bold text-slate-900 font-mono">{formatTime(elapsedTime)}</span>
+            </div>
 
-                {/* Steps */}
-                <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                            <span className="material-icons-round text-primary text-xs">check</span>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-slate-500">Introduction</p>
-                            <p className="text-xs text-slate-400">Completed</p>
-                        </div>
-                    </div>
+            {/* Overall Progress */}
+            <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-500 font-medium">Progress</span>
+                    <span className="text-primary font-bold">{progress}%</span>
+                </div>
+                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                        className="h-full bg-gradient-to-r from-primary to-teal-400 rounded-full transition-all duration-500"
+                        style={{ width: `${progress}%` }}
+                    />
+                </div>
+                <p className="text-xs text-slate-400">{answeredCount} of {questions.length} answered</p>
+            </div>
+
+            {/* Avg Score */}
+            {avgScore !== null && (
+                <div className="bg-slate-50 rounded-xl p-4 text-center">
+                    <p className="text-xs text-slate-400 font-medium mb-1">Average Score</p>
+                    <p className={`text-2xl font-bold ${scoreTextColor(avgScore / 10 * 10)}`}>{avgScore}/10</p>
+                </div>
+            )}
+
+            {/* Question Navigator */}
+            <div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Questions</p>
+                <div className="space-y-1.5 max-h-80 overflow-y-auto pr-1">
                     {questions.map((q, i) => {
-                        const isDone = evaluations[i] !== null
                         const isCurrent = i === currentIndex
+                        const isAnswered = evaluations?.[i]
+                        const score = isAnswered?.score
+
                         return (
-                            <div key={i} className="flex items-center gap-3">
-                                <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${isDone
-                                        ? 'bg-primary/20 text-primary'
-                                        : isCurrent
-                                            ? 'border-2 border-primary text-primary'
-                                            : 'bg-slate-100 text-slate-400'
+                            <div
+                                key={i}
+                                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm ${isCurrent
+                                    ? 'bg-primary/10 text-primary font-semibold shadow-sm'
+                                    : isAnswered
+                                        ? 'bg-slate-50 text-slate-600'
+                                        : 'text-slate-400'
+                                    }`}
+                            >
+                                {/* Number / Check */}
+                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ${isCurrent ? 'bg-primary text-white' :
+                                    isAnswered ? `${scoreColor(score)} text-white` :
+                                        'bg-slate-100 text-slate-400'
                                     }`}>
-                                    {isDone ? <span className="material-icons-round text-xs">check</span> : i + 1}
+                                    {isAnswered ? (
+                                        <span className="material-icons-round text-xs">check</span>
+                                    ) : (
+                                        i + 1
+                                    )}
                                 </div>
-                                <div className="min-w-0">
-                                    <p className={`text-sm truncate ${isCurrent ? 'font-semibold text-slate-900' : isDone ? 'text-slate-500' : 'text-slate-400'}`}>
-                                        {q.topic || `Question ${i + 1}`}
+
+                                {/* Label */}
+                                <div className="flex-1 min-w-0">
+                                    <p className="truncate text-xs">
+                                        {q.topic || q.question?.slice(0, 30) + '...' || `Question ${i + 1}`}
                                     </p>
-                                    {isCurrent && <p className="text-xs text-primary font-medium">In progress...</p>}
                                 </div>
+
+                                {/* Score */}
+                                {isAnswered && score != null && (
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${score >= 7 ? 'bg-emerald-50 text-emerald-600' :
+                                        score >= 4 ? 'bg-amber-50 text-amber-600' :
+                                            'bg-red-50 text-red-600'
+                                        }`}>
+                                        {score}/10
+                                    </span>
+                                )}
+
+                                {/* Mode pill */}
+                                {q.mode && q.mode !== 'text' && (
+                                    <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${q.mode === 'voice' ? 'bg-rose-50 text-rose-500' :
+                                        q.mode === 'coding' ? 'bg-violet-50 text-violet-500' :
+                                            'bg-blue-50 text-blue-500'
+                                        }`}>
+                                        {q.mode}
+                                    </span>
+                                )}
                             </div>
                         )
                     })}
                 </div>
             </div>
 
-            {/* Live Feedback Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex-1">
-                <h3 className="font-semibold text-slate-900 text-sm mb-3 flex items-center gap-2">
-                    <span className="material-icons-round text-primary text-base">lightbulb</span>
-                    Live Feedback
-                </h3>
-                {feedback ? (
-                    <div className="bg-primary/5 border border-primary/10 rounded-lg p-3">
-                        <p className="text-sm text-slate-600 leading-relaxed">{feedback}</p>
+            {/* Keyboard Shortcuts */}
+            <div className="pt-3 border-t border-slate-100">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Shortcuts</p>
+                <div className="space-y-1.5 text-[11px] text-slate-400">
+                    <div className="flex items-center justify-between">
+                        <span>Submit</span>
+                        <kbd className="px-1.5 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px] font-mono">Ctrl+↵</kbd>
                     </div>
-                ) : (
-                    <p className="text-sm text-slate-400 italic">Feedback will appear after you answer a question.</p>
-                )}
-            </div>
-
-            {/* Timer Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-                <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-500">Elapsed Time</span>
-                    <span className="text-lg font-mono font-bold text-slate-900">{formatTime(elapsedTime)}</span>
+                    <div className="flex items-center justify-between">
+                        <span>Skip</span>
+                        <kbd className="px-1.5 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px] font-mono">Ctrl+S</kbd>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <span>Pause</span>
+                        <kbd className="px-1.5 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px] font-mono">Esc</kbd>
+                    </div>
                 </div>
             </div>
-        </div>
+        </aside>
     )
 }
