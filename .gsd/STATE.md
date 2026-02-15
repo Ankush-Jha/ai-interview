@@ -1,26 +1,27 @@
 # STATE.md — Project Memory
 
 > **Last Updated**: 2026-02-16
-> **Current Phase**: Not started
-> **Session**: Fresh initialization
+> **Current Phase**: 1 — Foundation & Design System
+> **Session**: Phase 1 planning complete
+
+## Current Position
+- **Phase**: 1
+- **Task**: Planning complete
+- **Status**: Ready for execution
 
 ## Active Context
 
-- Project: AI Socratic Interview Coach
+- Project: AI Socratic Interview Coach ("Viva")
 - Stack: React + TypeScript + Vite + Tailwind + shadcn/ui + Groq + Firebase
-- Status: Spec finalized, roadmap created, ready for Phase 1 planning
+- 3 plans created for Phase 1 across 2 waves
 
-## Decisions Made
+## Plans Overview
 
-- Free-tier only: Groq for AI, Web Speech API for voice, Firebase Spark plan
-- Design: Linear.app-style — neutral palette, Inter font, shadcn/ui, zero gradients
-- V1 scope excludes: webcam, avatar, Anki, multi-language, filler detection
+| Plan | Name | Wave | Tasks |
+|------|------|------|-------|
+| 1.1 | Project Scaffold + Design System | 1 | 2 |
+| 1.2 | Firebase Auth + Routing | 1 | 2 |
+| 1.3 | App Shell + Page Stubs | 2 | 3 |
 
-## Blockers
-
-None.
-
-## Notes
-
-- Previous codebase was deleted for a clean start
-- `.env.local` preserved with existing Firebase credentials
+## Next Steps
+1. /execute 1
