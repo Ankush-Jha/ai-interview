@@ -1,36 +1,30 @@
 # STATE.md — Project Memory
 
-> **Last Updated**: 2026-02-17
-> **Current Phase**: 1 ✅ Complete — Ready for Phase 2
-> **Session**: Phase 1 fully executed and committed
+> **Last Updated**: 2026-02-16
+> **Current Phase**: 2 — Document Pipeline (planned)
+> **Session**: Phase 2 planning complete
 
 ## Current Position
-- **Phase**: 1 → Complete
-- **Task**: All 3 plans executed
-- **Status**: Ready for Phase 2 (Document Pipeline)
+- **Phase**: 2
+- **Task**: Planning complete
+- **Status**: Ready for execution
 
 ## Active Context
 
 - Project: AI Socratic Interview Coach ("Viva")
 - Stack: React + TypeScript + Vite + Tailwind + shadcn/ui + Groq + Firebase
-- Phase 1 committed in 3 separate commits
+- Phase 1 complete (scaffold, auth, routing, app shell)
 
-## Completed Plans
+## Plans Overview
 
-| Plan | Name | Status | Commit |
-|------|------|--------|--------|
-| 1.1 | Project Scaffold + Design System | ✅ | feat(phase-1): project scaffold + design system |
-| 1.2 | Firebase Auth + Routing | ✅ | feat(phase-1): firebase auth + routing |
-| 1.3 | App Shell + Page Stubs | ✅ | feat(phase-1): app shell + page stubs |
+| Plan | Name | Wave | Tasks |
+|------|------|------|-------|
+| 2.1 | PDF Upload UI + Client-Side Parsing | 1 | 2 |
+| 2.2 | Groq API Integration + Content Analysis | 1 | 2 |
+| 2.3 | Firestore Storage + Dashboard Documents | 2 | 2 |
 
-## Key Files Created (Phase 1)
-
-- `src/components/layout/Sidebar.tsx` — Nav + user section
-- `src/components/layout/Header.tsx` — Dynamic title + dropdown
-- `src/components/layout/AppLayout.tsx` — Responsive shell
-- `src/pages/` — Dashboard, Configure, Session, Results, History, Settings
-- `src/contexts/AuthContext.tsx` — Firebase auth state
-- `src/lib/firebase.ts`, `src/lib/auth.ts` — Firebase config + auth utils
+## Pre-requisite
+- User must add `VITE_GROQ_API_KEY=gsk_...` to `.env.local` before Plan 2.2
 
 ## Next Steps
-1. /plan 2 (Document Pipeline)
+1. /execute 2
