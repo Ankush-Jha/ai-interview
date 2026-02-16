@@ -50,78 +50,98 @@
 @theme {
     --color-brand: oklch(0.585 0.233 277);
     --color-brand-foreground: oklch(1 0 0);
-    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-sans: 'Space Grotesk', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-mono: 'Space Mono', monospace;
 }
 
-/* ── Light mode (default) ── */
+/* ── Light mode ── */
 :root {
-    --radius: 0.625rem;
-    --background: oklch(0.985 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.646 0.222 41.116);
-    --chart-2: oklch(0.6 0.118 184.704);
-    --chart-3: oklch(0.398 0.07 227.392);
-    --chart-4: oklch(0.828 0.189 84.429);
-    --chart-5: oklch(0.769 0.188 70.08);
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    --radius: 0;
+    --background: #ffffff;
+    --foreground: #000000;
+    --card: #ffffff;
+    --card-foreground: #000000;
+    --popover: #ffffff;
+    --popover-foreground: #000000;
+    --primary: #b9f20d;
+    --primary-foreground: #000000;
+    --secondary: #f5f5f5;
+    --secondary-foreground: #000000;
+    --muted: #f5f5f5;
+    --muted-foreground: #737373;
+    --accent: #f5f5f5;
+    --accent-foreground: #000000;
+    --destructive: #FF003C;
+    --border: #000000;
+    --input: #000000;
+    --ring: #b9f20d;
+    --chart-1: #b9f20d;
+    --chart-2: #FF003C;
+    --chart-3: #4400ff;
+    --chart-4: #ff6600;
+    --chart-5: #00ccff;
+    --sidebar: #ffffff;
+    --sidebar-foreground: #000000;
+    --sidebar-primary: #b9f20d;
+    --sidebar-primary-foreground: #000000;
+    --sidebar-accent: #f5f5f5;
+    --sidebar-accent-foreground: #000000;
+    --sidebar-border: #000000;
+    --sidebar-ring: #b9f20d;
+
+    /* Neo-brutalist tokens */
+    --neo-primary: #b9f20d;
+    --neo-error: #FF003C;
+    --neo-black: #000000;
+    --neo-white: #ffffff;
+    --neo-neutral-100: #f5f5f5;
+    --neo-neutral-400: #a3a3a3;
+    --neo-neutral-500: #737373;
+    --neo-neutral-900: #171717;
 }
 
 /* ── Dark mode ── */
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.488 0.243 264.376);
-    --chart-2: oklch(0.696 0.17 162.48);
-    --chart-3: oklch(0.769 0.188 70.08);
-    --chart-4: oklch(0.627 0.265 303.9);
-    --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    --background: #171717;
+    --foreground: #f5f5f5;
+    --card: #262626;
+    --card-foreground: #f5f5f5;
+    --popover: #262626;
+    --popover-foreground: #f5f5f5;
+    --primary: #b9f20d;
+    --primary-foreground: #000000;
+    --secondary: #262626;
+    --secondary-foreground: #f5f5f5;
+    --muted: #262626;
+    --muted-foreground: #a3a3a3;
+    --accent: #262626;
+    --accent-foreground: #f5f5f5;
+    --destructive: #FF003C;
+    --border: #f5f5f5;
+    --input: #f5f5f5;
+    --ring: #b9f20d;
+    --chart-1: #b9f20d;
+    --chart-2: #FF003C;
+    --chart-3: #7c66ff;
+    --chart-4: #ff9944;
+    --chart-5: #44ddff;
+    --sidebar: #262626;
+    --sidebar-foreground: #f5f5f5;
+    --sidebar-primary: #b9f20d;
+    --sidebar-primary-foreground: #000000;
+    --sidebar-accent: #333333;
+    --sidebar-accent-foreground: #f5f5f5;
+    --sidebar-border: #f5f5f5;
+    --sidebar-ring: #b9f20d;
+
+    --neo-primary: #b9f20d;
+    --neo-error: #FF003C;
+    --neo-black: #f5f5f5;
+    --neo-white: #171717;
+    --neo-neutral-100: #262626;
+    --neo-neutral-400: #737373;
+    --neo-neutral-500: #a3a3a3;
+    --neo-neutral-900: #f5f5f5;
 }
 
 /* ── Base layer ── */
@@ -132,7 +152,412 @@
 
     body {
         @apply bg-background text-foreground;
+        font-family: 'Space Grotesk', sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
     }
+}
+
+/* ── Neo-brutalist typography ── */
+.font-display {
+    font-family: 'Archivo Black', sans-serif;
+}
+
+.font-mono {
+    font-family: 'Space Mono', monospace;
+}
+
+/* ── Selection ── */
+::selection {
+    background: var(--neo-primary);
+    color: var(--neo-black);
+}
+
+/* ── Neo-brutalist scrollbar ── */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--background);
+    border-left: 3px solid var(--border);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--foreground);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--neo-primary);
+}
+
+/* ── Brutalist utilities ── */
+.neo-border {
+    border: 3px solid var(--foreground);
+}
+
+.neo-border-thin {
+    border: 2px solid var(--foreground);
+}
+
+.shadow-hard {
+    box-shadow: 6px 6px 0px 0px var(--foreground);
+}
+
+.shadow-hard-sm {
+    box-shadow: 4px 4px 0px 0px var(--foreground);
+}
+
+.shadow-hard-xs {
+    box-shadow: 2px 2px 0px 0px var(--foreground);
+}
+
+/* ── Brutalist buttons ── */
+.btn-neo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    border: 3px solid var(--foreground);
+    box-shadow: 4px 4px 0px 0px var(--foreground);
+    transition: transform 0s, box-shadow 0s;
+    cursor: pointer;
+}
+
+.btn-neo:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px 0px var(--foreground);
+}
+
+.btn-neo:active {
+    transform: translate(4px, 4px);
+    box-shadow: none;
+}
+
+.btn-neo:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: 4px 4px 0px 0px var(--foreground) !important;
+}
+
+/* ── Brutalist card ── */
+.neo-card {
+    background: var(--card);
+    border: 3px solid var(--foreground);
+    box-shadow: 6px 6px 0px 0px var(--foreground);
+}
+
+.neo-card-sm {
+    background: var(--card);
+    border: 2px solid var(--foreground);
+    box-shadow: 4px 4px 0px 0px var(--foreground);
+}
+
+/* ── Brutalist input ── */
+.neo-input {
+    font-family: 'Space Mono', monospace;
+    border: 3px solid var(--foreground);
+    background: var(--background);
+    outline: none;
+}
+
+.neo-input:focus {
+    box-shadow: 4px 4px 0px 0px var(--neo-primary);
+    border-color: var(--neo-primary);
+}
+
+/* ── Brutalist badge ── */
+.neo-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border: 2px solid var(--foreground);
+    padding: 2px 8px;
+}
+
+/* ── Audio bar animations ── */
+@keyframes audioBar {
+
+    0%,
+    100% {
+        height: 4px;
+    }
+
+    50% {
+        height: 24px;
+    }
+}
+
+.audio-bar {
+    width: 3px;
+    background: var(--foreground);
+    animation: audioBar 1s ease-in-out infinite;
+}
+
+.audio-bar:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.audio-bar:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.audio-bar:nth-child(4) {
+    animation-delay: 0.3s;
+}
+
+.audio-bar:nth-child(5) {
+    animation-delay: 0.15s;
+}
+
+.audio-bar:nth-child(6) {
+    animation-delay: 0.25s;
+}
+
+.audio-bar:nth-child(7) {
+    animation-delay: 0.05s;
+}
+
+.audio-bar:nth-child(8) {
+    animation-delay: 0.35s;
+}
+
+/* ── Brutalist progress bar ── */
+.neo-progress {
+    height: 12px;
+    border: 2px solid var(--foreground);
+    background: var(--background);
+}
+
+.neo-progress-fill {
+    height: 100%;
+    background: var(--neo-primary);
+    transition: width 0.5s ease-out;
+}
+
+/* ── Vibrant accent colors ── */
+:root {
+    --neo-violet: #7c3aed;
+    --neo-pink: #ec4899;
+    --neo-blue: #3b82f6;
+    --neo-gold: #f59e0b;
+    --neo-teal: #14b8a6;
+    --neo-gradient-1: linear-gradient(135deg, #b9f20d 0%, #14b8a6 50%, #3b82f6 100%);
+    --neo-gradient-2: linear-gradient(135deg, #7c3aed 0%, #ec4899 50%, #f59e0b 100%);
+    --neo-gradient-3: linear-gradient(135deg, #3b82f6 0%, #7c3aed 100%);
+}
+
+/* ── AI Orb animations ── */
+@keyframes orbPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(185, 242, 13, 0.4);
+    }
+
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px 8px rgba(185, 242, 13, 0.2);
+    }
+}
+
+@keyframes orbSpeak {
+
+    0%,
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.5);
+    }
+
+    25% {
+        transform: scale(1.08);
+        box-shadow: 0 0 24px 10px rgba(124, 58, 237, 0.3);
+    }
+
+    75% {
+        transform: scale(1.03);
+        box-shadow: 0 0 16px 6px rgba(236, 72, 153, 0.3);
+    }
+}
+
+@keyframes orbListen {
+
+    0%,
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5);
+    }
+
+    50% {
+        transform: scale(1.06);
+        box-shadow: 0 0 20px 10px rgba(59, 130, 246, 0.3);
+    }
+}
+
+@keyframes orbThink {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.orb-idle {
+    animation: orbPulse 3s ease-in-out infinite;
+}
+
+.orb-speaking {
+    animation: orbSpeak 1.2s ease-in-out infinite;
+}
+
+.orb-listening {
+    animation: orbListen 1.5s ease-in-out infinite;
+}
+
+.orb-thinking {
+    animation: orbThink 2s linear infinite;
+}
+
+/* ── Gradient text ── */
+.gradient-text {
+    background: var(--neo-gradient-2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ── Mic recording pulse ── */
+@keyframes micPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 0, 60, 0.6);
+    }
+
+    50% {
+        box-shadow: 0 0 16px 6px rgba(255, 0, 60, 0.3);
+    }
+}
+
+.mic-recording {
+    animation: micPulse 1.2s ease-in-out infinite;
+    background: var(--neo-error) !important;
+}
+
+/* ── Processing dots ── */
+@keyframes processDots {
+
+    0%,
+    100% {
+        opacity: 0.3;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+.process-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--neo-violet);
+    animation: processDots 1s ease-in-out infinite;
+}
+
+/* ── Waveform for speaking ── */
+@keyframes waveform {
+
+    0%,
+    100% {
+        height: 4px;
+    }
+
+    25% {
+        height: 16px;
+    }
+
+    50% {
+        height: 28px;
+    }
+
+    75% {
+        height: 12px;
+    }
+}
+
+.waveform-bar {
+    width: 3px;
+    background: var(--neo-violet);
+    animation: waveform 0.8s ease-in-out infinite;
+}
+
+/* ── Colorful score badges ── */
+.score-high {
+    background: var(--neo-primary);
+    color: #000;
+}
+
+.score-mid {
+    background: var(--neo-gold);
+    color: #000;
+}
+
+.score-low {
+    background: var(--neo-error);
+    color: #fff;
+}
+
+/* ── Gradient border effect ── */
+.gradient-border {
+    position: relative;
+}
+
+.gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    background: var(--neo-gradient-1);
+    z-index: -1;
+}
+
+/* ── Fade in animation ── */
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-slide-up {
+    animation: fadeSlideUp 0.4s ease-out;
+}
+
+/* ── Colorful card accents ── */
+.neo-card-violet {
+    background: var(--card);
+    border: 3px solid var(--neo-violet);
+    box-shadow: 6px 6px 0px 0px var(--neo-violet);
+}
+
+.neo-card-pink {
+    background: var(--card);
+    border: 3px solid var(--neo-pink);
+    box-shadow: 6px 6px 0px 0px var(--neo-pink);
+}
+
+.neo-card-blue {
+    background: var(--card);
+    border: 3px solid var(--neo-blue);
+    box-shadow: 6px 6px 0px 0px var(--neo-blue);
 }

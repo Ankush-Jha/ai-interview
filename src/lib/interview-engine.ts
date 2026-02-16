@@ -29,6 +29,113 @@ const BLOOM_TARGETS: Record<Difficulty, string> = {
     advanced: 'evaluate and create',
 }
 
+// ── Persona voice descriptions ────────────────────────────────────
+const PERSONA_VOICE: Record<string, string> = {
+    socratic: 'You guide through questioning. Ask "why?" and "how?" to lead the student to discover answers themselves. Be warm but intellectually rigorous.',
+    friendly: 'You are encouraging, warm, and supportive. Use casual language, celebrate small wins, and gently correct mistakes. Make the student feel comfortable.',
+    challenging: 'You are direct and push for precision. Challenge vague answers, ask for specifics, and hold a high standard. Be respectful but demanding.',
+}
+
+// ── Generate Greeting ──────────────────────────────────────────────
+export async function generateGreeting(
+    doc: StoredDocument,
+    config: InterviewConfig
+): Promise<string> {
+    const apiKey = getApiKey()
+    const topicNames = doc.topics.map((t) => t.name).join(', ')
+
+    const response = await fetch(GROQ_API_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+            model: MODEL,
+            messages: [
+                {
+                    role: 'system',
+                    content: `You are an AI interview coach. ${PERSONA_VOICE[config.persona] || PERSONA_VOICE.socratic}
+
+Generate a SHORT, warm greeting (2-3 sentences max) to start an interview session. Mention:
+- You've reviewed their material on the document title
+- The topics you'll cover (pick 2-3 key ones)
+- The difficulty level in a natural way
+- End with something like "Ready to begin?" or "Let's get started!"
+
+Keep it concise and natural. No bullet points, no formatting. Just a conversational greeting.`,
+                },
+                {
+                    role: 'user',
+                    content: `Document: "${doc.title}"\nTopics: ${topicNames}\nDifficulty: ${config.difficulty}\nNumber of questions: ${config.questionCount}`,
+                },
+            ],
+            temperature: 0.8,
+            max_tokens: 200,
+        }),
+    })
+
+    if (!response.ok) {
+        // Fallback greeting if API fails
+        return `Hey! I've reviewed your material on "${doc.title}". We'll cover ${config.questionCount} questions at the ${config.difficulty} level, focusing on topics like ${topicNames}. Ready to begin?`
+    }
+
+    const data = await response.json()
+    const content = data.choices?.[0]?.message?.content
+    return content?.trim() || `Hey! I've reviewed your material on "${doc.title}". We'll cover ${config.questionCount} questions at the ${config.difficulty} level. Let's get started!`
+}
+
+// ── Generate Transition ────────────────────────────────────────────
+export async function generateTransition(
+    prevEvaluation: Evaluation,
+    nextQuestion: Question,
+    config: InterviewConfig
+): Promise<string> {
+    const apiKey = getApiKey()
+
+    const response = await fetch(GROQ_API_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+            model: MODEL,
+            messages: [
+                {
+                    role: 'system',
+                    content: `You are an AI interview coach. ${PERSONA_VOICE[config.persona] || PERSONA_VOICE.socratic}
+
+Generate a VERY SHORT transition (1 sentence max) between interview questions. Based on the previous answer's score, provide a brief bridge to the next topic.
+
+Rules:
+- If score was high (70+): brief acknowledgment + move forward
+- If score was low (<50): gentle encouragement + move on
+- Reference the next topic naturally
+- Keep under 20 words. Be conversational.
+- No formatting, no bullets. Just one natural sentence.`,
+                },
+                {
+                    role: 'user',
+                    content: `Previous score: ${prevEvaluation.score}/100\nPrevious topic: ${prevEvaluation.questionId}\nNext question type: ${nextQuestion.type}\nNext topic: ${nextQuestion.topicName}`,
+                },
+            ],
+            temperature: 0.8,
+            max_tokens: 80,
+        }),
+    })
+
+    if (!response.ok) {
+        // Fallback transitions
+        if (prevEvaluation.score >= 70) return "Nice work! Let's keep going."
+        return "Let's move on to the next topic."
+    }
+
+    const data = await response.json()
+    const content = data.choices?.[0]?.message?.content
+    return content?.trim() || "Let's move on to the next one."
+}
+
 // ── Generate Questions ─────────────────────────────────────────────
 export async function generateQuestions(
     doc: StoredDocument,
@@ -126,9 +233,10 @@ Respond with a JSON object:
 {
   "score": number (0-100),
   "feedback": string (2-3 sentences, constructive),
-  "strengths": string[] (what the student got right),
-  "gaps": string[] (what was missed or incorrect),
-  "followUpQuestion": string | null (a probing question to deepen understanding, or null)
+  "conversationalFeedback": string (1 SHORT sentence, warm and natural — like "Great answer! You nailed the key concept." or "Not quite — the key idea is about X rather than Y."),
+  "strengths": string[] (what the student got right, 1-3 items),
+  "gaps": string[] (what was missed or incorrect, 0-3 items),
+  "followUpQuestion": string | null (a probing question to deepen understanding if score < 80, or null if they nailed it)
 }`
 
     const response = await fetch(GROQ_API_URL, {
@@ -168,6 +276,7 @@ Respond with a JSON object:
         questionId: question.id,
         score: typeof parsed.score === 'number' ? Math.min(100, Math.max(0, parsed.score)) : 50,
         feedback: String(parsed.feedback || 'No feedback available.'),
+        conversationalFeedback: String(parsed.conversationalFeedback || parsed.feedback || 'Let me review that.'),
         strengths: Array.isArray(parsed.strengths) ? parsed.strengths.map(String) : [],
         gaps: Array.isArray(parsed.gaps) ? parsed.gaps.map(String) : [],
         followUpQuestion: parsed.followUpQuestion ? String(parsed.followUpQuestion) : undefined,

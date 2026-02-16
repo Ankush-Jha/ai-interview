@@ -6,34 +6,15 @@ import { analyzeContent } from '@/lib/groq'
 import { saveDocument } from '@/lib/documents'
 import { useAuth } from '@/hooks/useAuth'
 import type { ParsedDocument, DocumentAnalysis, BloomLevel } from '@/types/document'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
-import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from 'sonner'
-import {
-    FileText,
-    Loader2,
-    AlertCircle,
-    Sparkles,
-    BookOpen,
-    ArrowRight,
-} from 'lucide-react'
 
 const bloomColors: Record<BloomLevel, string> = {
-    remember: 'bg-slate-100 text-slate-700 border-slate-200',
-    understand: 'bg-blue-50 text-blue-700 border-blue-200',
-    apply: 'bg-green-50 text-green-700 border-green-200',
-    analyze: 'bg-amber-50 text-amber-700 border-amber-200',
-    evaluate: 'bg-orange-50 text-orange-700 border-orange-200',
-    create: 'bg-violet-50 text-violet-700 border-violet-200',
-}
-
-const difficultyColors: Record<string, string> = {
-    introductory: 'bg-green-50 text-green-700 border-green-200',
-    intermediate: 'bg-amber-50 text-amber-700 border-amber-200',
-    advanced: 'bg-red-50 text-red-700 border-red-200',
+    remember: 'bg-background',
+    understand: 'bg-blue-50 dark:bg-blue-950',
+    apply: 'bg-green-50 dark:bg-green-950',
+    analyze: 'bg-amber-50 dark:bg-amber-950',
+    evaluate: 'bg-orange-50 dark:bg-orange-950',
+    create: 'bg-violet-50 dark:bg-violet-950',
 }
 
 export default function Configure() {
@@ -51,7 +32,6 @@ export default function Configure() {
         setError(null)
         setParsed(null)
         setAnalysis(null)
-
         try {
             const result = await parsePDF(file)
             setParsed({ file, ...result })
@@ -66,7 +46,6 @@ export default function Configure() {
         if (!parsed) return
         setAnalyzing(true)
         setError(null)
-
         try {
             const result = await analyzeContent(parsed.text, parsed.title, parsed.pageCount)
             setAnalysis(result)
@@ -84,180 +63,157 @@ export default function Configure() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="p-6 lg:p-8 max-w-3xl mx-auto space-y-6">
             <div>
-                <h1 className="text-2xl font-semibold tracking-tight">New Interview</h1>
-                <p className="text-sm text-muted-foreground">
+                <h1 className="font-display text-3xl">NEW_INTERVIEW</h1>
+                <p className="font-mono text-xs text-muted-foreground mt-1 uppercase tracking-wider">
                     Upload your study material to get started
                 </p>
             </div>
 
             {/* Step 1: Upload */}
             {!analysis && (
-                <FileDropzone
-                    onFileSelect={handleFileSelect}
-                    disabled={parsing || analyzing}
-                />
+                <FileDropzone onFileSelect={handleFileSelect} disabled={parsing || analyzing} />
             )}
 
             {/* Parsing state */}
             {parsing && (
-                <Card>
-                    <CardContent className="flex items-center justify-center gap-3 py-8">
-                        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground">Extracting text from PDF…</p>
-                    </CardContent>
-                </Card>
+                <div className="neo-card p-8 flex items-center justify-center gap-3">
+                    <div className="flex gap-1 h-4 items-end">
+                        {[...Array(5)].map((_, i) => (
+                            <div key={i} className="audio-bar" style={{ animationDelay: `${i * 0.1}s` }} />
+                        ))}
+                    </div>
+                    <p className="font-mono text-xs text-muted-foreground uppercase">Extracting text from PDF…</p>
+                </div>
             )}
 
             {/* Error */}
             {error && (
-                <Card className="border-destructive/50">
-                    <CardContent className="flex items-start gap-3 py-4">
-                        <AlertCircle className="h-5 w-5 shrink-0 text-destructive mt-0.5" />
+                <div className="neo-card p-4 border-[--neo-error]!" style={{ borderColor: 'var(--neo-error)', boxShadow: '6px 6px 0px 0px var(--neo-error)' }}>
+                    <div className="flex items-start gap-3">
+                        <span className="font-display text-xl text-[--neo-error]">✗</span>
                         <div>
-                            <p className="text-sm font-medium text-destructive">Something went wrong</p>
-                            <p className="text-xs text-muted-foreground mt-1">{error}</p>
-                            <Button variant="outline" size="sm" className="mt-3" onClick={handleReset}>
-                                Try again
-                            </Button>
+                            <p className="font-bold text-sm text-[--neo-error]">ERROR</p>
+                            <p className="font-mono text-xs text-muted-foreground mt-1">{error}</p>
+                            <button onClick={handleReset} className="btn-neo bg-background px-4 py-1.5 font-mono text-[10px] font-bold mt-3">
+                                [TRY AGAIN]
+                            </button>
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
             )}
 
             {/* Parsed — ready to analyze */}
             {parsed && !analysis && !analyzing && !error && (
                 <div className="space-y-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <FileText className="h-4 w-4" />
-                                {parsed.title}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                <span>{parsed.pageCount} {parsed.pageCount === 1 ? 'page' : 'pages'}</span>
-                                <Separator orientation="vertical" className="h-3" />
-                                <span>{parsed.text.split(/\s+/).length.toLocaleString()} words</span>
-                            </div>
-                            <Separator />
-                            <p className="text-sm leading-relaxed text-foreground/80">
+                    <div className="neo-card p-6 space-y-4">
+                        <div className="flex items-center gap-2">
+                            <span className="text-lg">📄</span>
+                            <h3 className="font-display text-lg">{parsed.title}</h3>
+                        </div>
+                        <div className="flex items-center gap-4 font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
+                            <span>{parsed.pageCount} {parsed.pageCount === 1 ? 'PAGE' : 'PAGES'}</span>
+                            <span className="w-px h-3 bg-foreground" />
+                            <span>{parsed.text.split(/\s+/).length.toLocaleString()} WORDS</span>
+                        </div>
+                        <div className="border-t-[2px] border-foreground pt-4">
+                            <p className="font-mono text-xs leading-relaxed text-muted-foreground">
                                 {parsed.text.slice(0, 300).trim()}
                                 {parsed.text.length > 300 && '…'}
                             </p>
-                        </CardContent>
-                    </Card>
-
+                        </div>
+                    </div>
                     <div className="flex gap-3">
-                        <Button variant="outline" onClick={handleReset}>
-                            Upload different file
-                        </Button>
-                        <Button onClick={handleAnalyze}>
-                            <Sparkles className="mr-2 h-4 w-4" />
-                            Analyze Content
-                        </Button>
+                        <button onClick={handleReset} className="btn-neo bg-background px-5 py-2.5 font-mono text-xs font-bold">
+                            [DIFFERENT FILE]
+                        </button>
+                        <button onClick={handleAnalyze} className="btn-neo bg-[--neo-primary] px-5 py-2.5 font-mono text-xs font-bold">
+                            [ANALYZE CONTENT] ⚡
+                        </button>
                     </div>
                 </div>
             )}
 
             {/* Analyzing state */}
             {analyzing && (
-                <Card>
-                    <CardContent className="py-8 space-y-4">
-                        <div className="flex items-center justify-center gap-3">
-                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                            <p className="text-sm text-muted-foreground">Analyzing your material…</p>
+                <div className="neo-card p-8 text-center space-y-4">
+                    <div className="flex items-center justify-center gap-3">
+                        <div className="flex gap-1 h-6 items-end">
+                            {[...Array(8)].map((_, i) => (
+                                <div key={i} className="audio-bar" style={{ animationDelay: `${i * 0.08}s` }} />
+                            ))}
                         </div>
-                        <div className="space-y-2 max-w-md mx-auto">
-                            <Skeleton className="h-4 w-full" />
-                            <Skeleton className="h-4 w-3/4" />
-                            <Skeleton className="h-4 w-1/2" />
-                        </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                    <p className="font-mono text-xs text-muted-foreground uppercase">Analyzing your material…</p>
+                    <div className="space-y-2 max-w-md mx-auto">
+                        <div className="h-4 w-full bg-muted border-[2px] border-foreground/20 animate-pulse" />
+                        <div className="h-4 w-3/4 bg-muted border-[2px] border-foreground/20 animate-pulse" />
+                        <div className="h-4 w-1/2 bg-muted border-[2px] border-foreground/20 animate-pulse" />
+                    </div>
+                </div>
             )}
 
             {/* Analysis results */}
             {analysis && (
                 <div className="space-y-4">
-                    {/* Summary card */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <BookOpen className="h-4 w-4" />
-                                {analysis.title}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <p className="text-sm leading-relaxed text-foreground/80">
-                                {analysis.summary}
-                            </p>
-
-                            <div className="flex flex-wrap items-center gap-2">
-                                <Badge
-                                    variant="outline"
-                                    className={difficultyColors[analysis.estimatedDifficulty] || ''}
-                                >
-                                    {analysis.estimatedDifficulty}
-                                </Badge>
-                                <span className="text-xs text-muted-foreground">
-                                    {analysis.totalPages} pages · {analysis.topics.length} topics
-                                </span>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    {/* Summary */}
+                    <div className="neo-card p-6 space-y-4">
+                        <div className="flex items-center gap-2">
+                            <span className="text-lg">📚</span>
+                            <h3 className="font-display text-lg">{analysis.title}</h3>
+                        </div>
+                        <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+                            {analysis.summary}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className="neo-badge bg-[--neo-primary]">
+                                {analysis.estimatedDifficulty}
+                            </span>
+                            <span className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
+                                {analysis.totalPages} PAGES • {analysis.topics.length} TOPICS
+                            </span>
+                        </div>
+                    </div>
 
                     {/* Topics */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-sm font-medium">Topics & Bloom's Level</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-3">
-                                {analysis.topics.map((topic, i) => (
-                                    <div key={i} className="flex items-start gap-3">
-                                        <Badge
-                                            variant="outline"
-                                            className={`shrink-0 text-[10px] ${bloomColors[topic.bloomLevel]}`}
-                                        >
-                                            {topic.bloomLevel}
-                                        </Badge>
-                                        <div>
-                                            <p className="text-sm font-medium">{topic.name}</p>
-                                            <p className="text-xs text-muted-foreground">{topic.description}</p>
-                                        </div>
+                    <div className="neo-card p-6">
+                        <h3 className="font-display text-sm mb-4">TOPICS & BLOOM'S LEVEL</h3>
+                        <div className="space-y-3">
+                            {analysis.topics.map((topic, i) => (
+                                <div key={i} className="flex items-start gap-3">
+                                    <span className={`neo-badge ${bloomColors[topic.bloomLevel]} flex-shrink-0`}>
+                                        {topic.bloomLevel}
+                                    </span>
+                                    <div>
+                                        <p className="font-bold text-sm">{topic.name}</p>
+                                        <p className="font-mono text-xs text-muted-foreground">{topic.description}</p>
                                     </div>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
 
                     {/* Key terms */}
                     {analysis.keyTerms.length > 0 && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-sm font-medium">Key Terms</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="flex flex-wrap gap-2">
-                                    {analysis.keyTerms.map((term, i) => (
-                                        <Badge key={i} variant="secondary" className="text-xs">
-                                            {term}
-                                        </Badge>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <div className="neo-card p-6">
+                            <h3 className="font-display text-sm mb-4">KEY_TERMS</h3>
+                            <div className="flex flex-wrap gap-2">
+                                {analysis.keyTerms.map((term, i) => (
+                                    <span key={i} className="neo-badge bg-muted">
+                                        {term}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
                     )}
 
                     {/* Actions */}
                     <div className="flex gap-3">
-                        <Button variant="outline" onClick={handleReset}>
-                            Start over
-                        </Button>
-                        <Button
+                        <button onClick={handleReset} className="btn-neo bg-background px-5 py-2.5 font-mono text-xs font-bold">
+                            [START OVER]
+                        </button>
+                        <button
                             disabled={saving}
                             onClick={async () => {
                                 if (!user || !analysis || !parsed) return
@@ -281,14 +237,10 @@ export default function Configure() {
                                     setSaving(false)
                                 }
                             }}
+                            className="btn-neo bg-[--neo-primary] px-5 py-2.5 font-mono text-xs font-bold"
                         >
-                            {saving ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : (
-                                <ArrowRight className="mr-2 h-4 w-4" />
-                            )}
-                            {saving ? 'Starting…' : 'Start Interview'}
-                        </Button>
+                            {saving ? '[STARTING…]' : '[START INTERVIEW] →'}
+                        </button>
                     </div>
                 </div>
             )}

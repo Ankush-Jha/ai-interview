@@ -1,23 +1,13 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { signOut } from '@/lib/auth'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import {
-    LayoutDashboard,
-    Plus,
-    Clock,
-    Settings,
-    LogOut,
-    GraduationCap,
-} from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-    { to: '/', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/configure', label: 'New Interview', icon: Plus },
-    { to: '/history', label: 'History', icon: Clock },
-    { to: '/settings', label: 'Settings', icon: Settings },
+    { to: '/', label: 'DASHBOARD', icon: '⌂' },
+    { to: '/configure', label: 'NEW INTERVIEW', icon: '+' },
+    { to: '/history', label: 'HISTORY', icon: '↻' },
+    { to: '/settings', label: 'SETTINGS', icon: '⚙' },
 ]
 
 interface SidebarProps {
@@ -34,20 +24,20 @@ export function Sidebar({ onNavigate }: SidebarProps) {
     }
 
     return (
-        <div className="flex h-full flex-col">
+        <div className="flex h-full flex-col bg-card border-r-[3px] border-foreground">
             {/* Logo */}
-            <div className="flex items-center gap-2.5 px-5 py-5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground">
-                    <GraduationCap className="h-4 w-4 text-background" />
+            <div className="px-5 py-5 border-b-[3px] border-foreground">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-[--neo-primary] border-[3px] border-foreground shadow-hard-xs flex items-center justify-center">
+                        <span className="font-display text-xl text-foreground">V</span>
+                    </div>
+                    <span className="font-display text-xl tracking-tight">VIVA</span>
                 </div>
-                <span className="text-[15px] font-semibold tracking-tight">Viva</span>
             </div>
 
-            <Separator />
-
             {/* Navigation */}
-            <nav className="flex-1 space-y-1 px-3 py-4">
-                {navItems.map(({ to, label, icon: Icon }) => (
+            <nav className="flex-1 px-3 py-4 space-y-2">
+                {navItems.map(({ to, label, icon }) => (
                     <NavLink
                         key={to}
                         to={to}
@@ -55,43 +45,40 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                         onClick={onNavigate}
                         className={({ isActive }) =>
                             cn(
-                                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                                'flex items-center gap-3 px-4 py-3 font-mono text-xs font-bold tracking-wider transition-all',
                                 isActive
-                                    ? 'bg-accent text-accent-foreground'
-                                    : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
+                                    ? 'bg-[--neo-primary] border-[3px] border-foreground shadow-hard-xs'
+                                    : 'border-[3px] border-transparent hover:border-foreground hover:bg-muted'
                             )
                         }
                     >
-                        <Icon className="h-4 w-4" />
-                        {label}
+                        <span className="text-base">{icon}</span>
+                        <span>{label}</span>
                     </NavLink>
                 ))}
             </nav>
 
             {/* User */}
-            <div className="border-t px-3 py-4">
-                <div className="flex items-center gap-3 px-3 py-1.5">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+            <div className="border-t-[3px] border-foreground p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 bg-[--neo-primary] border-[2px] border-foreground flex items-center justify-center font-display text-sm">
                         {(user?.displayName?.[0] || user?.email?.[0] || '?').toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                        <p className="truncate text-sm font-medium">
+                        <p className="font-bold text-sm truncate">
                             {user?.displayName || 'User'}
                         </p>
-                        <p className="truncate text-xs text-muted-foreground">
+                        <p className="font-mono text-[10px] text-muted-foreground truncate">
                             {user?.email}
                         </p>
                     </div>
                 </div>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="mt-2 w-full justify-start text-muted-foreground"
+                <button
                     onClick={handleSignOut}
+                    className="btn-neo w-full py-2 px-3 bg-background text-xs font-mono font-bold tracking-wider"
                 >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign out
-                </Button>
+                    [SIGN OUT]
+                </button>
             </div>
         </div>
     )

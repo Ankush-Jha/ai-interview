@@ -25,8 +25,8 @@ export default function App() {
                     <Route element={<ProtectedRoute />}>
                         <Route element={<AppLayout />}>
                             <Route path="/" element={<Dashboard />} />
-                            <Route path="/configure" element={<Configure />} />
                             <Route path="/session/:id" element={<Session />} />
+                            <Route path="/configure" element={<Configure />} />
                             <Route path="/results/:id" element={<Results />} />
                             <Route path="/history" element={<History />} />
                             <Route path="/settings" element={<Settings />} />

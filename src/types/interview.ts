@@ -1,6 +1,6 @@
 // ── Interview Configuration ────────────────────────────────────────
 export type Persona = 'socratic' | 'friendly' | 'challenging'
-export type QuestionType = 'conceptual' | 'applied' | 'analytical'
+export type QuestionType = 'conceptual' | 'applied' | 'analytical' | 'coding'
 export type Difficulty = 'introductory' | 'intermediate' | 'advanced'
 export type SessionState = 'configuring' | 'in-progress' | 'completed'
 
@@ -33,10 +33,43 @@ export interface Evaluation {
     questionId: string
     score: number // 0–100
     feedback: string
+    conversationalFeedback: string // short, warm, natural feedback
     strengths: string[]
     gaps: string[]
     followUpQuestion?: string
 }
+
+// ── Transcript Entry ───────────────────────────────────────────────
+export type TranscriptEntryType =
+    | 'greeting'
+    | 'question'
+    | 'answer'
+    | 'feedback'
+    | 'follow-up'
+    | 'transition'
+    | 'closing'
+    | 'system'
+
+export interface TranscriptEntry {
+    id: string
+    role: 'ai' | 'user' | 'system'
+    type: TranscriptEntryType
+    text: string
+    timestamp: string // ISO string
+    evaluation?: Evaluation // attached to feedback entries
+}
+
+// ── Interview Phase ────────────────────────────────────────────────
+export type InterviewPhase =
+    | 'loading'
+    | 'greeting'
+    | 'ready'
+    | 'awaiting-answer'
+    | 'evaluating'
+    | 'showing-feedback'
+    | 'follow-up'
+    | 'completed'
+    | 'error'
 
 // ── Interview Session ──────────────────────────────────────────────
 export interface InterviewSession {
@@ -50,6 +83,7 @@ export interface InterviewSession {
     evaluations: Evaluation[]
     state: SessionState
     currentQuestionIndex: number
+    followUpPending: boolean // whether a follow-up is queued
     startedAt: string // ISO string
     completedAt?: string
     overallScore?: number

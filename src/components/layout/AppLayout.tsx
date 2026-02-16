@@ -10,7 +10,7 @@ export function AppLayout() {
     return (
         <div className="flex h-screen bg-background">
             {/* Desktop sidebar */}
-            <aside className="hidden lg:flex lg:w-60 lg:flex-col border-r">
+            <aside className="hidden lg:flex lg:w-60 lg:flex-col flex-shrink-0">
                 <Sidebar />
             </aside>
 
@@ -24,10 +24,8 @@ export function AppLayout() {
             {/* Main */}
             <div className="flex flex-1 flex-col min-w-0">
                 <Header onMenuClick={() => setMobileOpen(true)} />
-                <main className="flex-1 overflow-y-auto p-6 lg:p-8">
-                    <div className="mx-auto max-w-5xl">
-                        <Outlet />
-                    </div>
+                <main className="flex-1 overflow-y-auto">
+                    <Outlet />
                 </main>
             </div>
         </div>
