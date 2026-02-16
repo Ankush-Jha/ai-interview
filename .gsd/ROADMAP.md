@@ -29,7 +29,7 @@
 - Auth-protected routes
 
 ### Phase 2: Document Pipeline
-**Status**: ⬜ Not Started
+**Status**: ✅ Complete
 **Objective**: Students can upload PDFs and the system extracts, analyzes, and structures the content for interview generation.
 **Deliverables**:
 - PDF upload UI with drag-and-drop
