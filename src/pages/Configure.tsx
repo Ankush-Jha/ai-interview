@@ -1,13 +1,17 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { FileDropzone } from '@/components/FileDropzone'
 import { parsePDF } from '@/lib/pdf'
 import { analyzeContent } from '@/lib/groq'
+import { saveDocument } from '@/lib/documents'
+import { useAuth } from '@/hooks/useAuth'
 import type { ParsedDocument, DocumentAnalysis, BloomLevel } from '@/types/document'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
+import { toast } from 'sonner'
 import {
     FileText,
     Loader2,
@@ -33,10 +37,13 @@ const difficultyColors: Record<string, string> = {
 }
 
 export default function Configure() {
+    const { user } = useAuth()
+    const navigate = useNavigate()
     const [parsed, setParsed] = useState<ParsedDocument | null>(null)
     const [analysis, setAnalysis] = useState<DocumentAnalysis | null>(null)
     const [parsing, setParsing] = useState(false)
     const [analyzing, setAnalyzing] = useState(false)
+    const [saving, setSaving] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     async function handleFileSelect(file: File) {
@@ -250,9 +257,29 @@ export default function Configure() {
                         <Button variant="outline" onClick={handleReset}>
                             Start over
                         </Button>
-                        <Button disabled>
-                            Start Interview
-                            <ArrowRight className="ml-2 h-4 w-4" />
+                        <Button
+                            disabled={saving}
+                            onClick={async () => {
+                                if (!user || !analysis || !parsed) return
+                                setSaving(true)
+                                try {
+                                    const docId = await saveDocument(user.uid, analysis, parsed.file)
+                                    toast.success('Document saved!')
+                                    navigate(`/`)
+                                    void docId
+                                } catch (err) {
+                                    toast.error(err instanceof Error ? err.message : 'Failed to save')
+                                } finally {
+                                    setSaving(false)
+                                }
+                            }}
+                        >
+                            {saving ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                <ArrowRight className="mr-2 h-4 w-4" />
+                            )}
+                            {saving ? 'Saving…' : 'Save & Continue'}
                         </Button>
                     </div>
                 </div>
