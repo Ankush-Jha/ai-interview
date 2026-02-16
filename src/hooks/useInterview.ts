@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { getDocument } from '@/lib/documents'
+import { saveSession } from '@/lib/sessions'
 import { generateQuestions, evaluateAnswer, adjustDifficulty } from '@/lib/interview-engine'
 import type { StoredDocument } from '@/types/document'
 import type {
@@ -96,16 +97,24 @@ export function useInterview(documentId: string, config: InterviewConfig) {
                 ? Math.round(newEvaluations.reduce((s, e) => s + e.score, 0) / newEvaluations.length)
                 : undefined
 
-            setSession({
+            const completedSession: InterviewSession = {
                 ...session,
                 answers: newAnswers,
                 evaluations: newEvaluations,
                 state: isLast ? 'completed' : 'in-progress',
                 completedAt: isLast ? new Date().toISOString() : undefined,
                 overallScore,
-            })
+            }
 
+            setSession(completedSession)
             setPhase(isLast ? 'completed' : 'ready')
+
+            // Auto-save to Firestore on completion
+            if (isLast && user) {
+                saveSession(user.uid, completedSession).catch(() => {
+                    // Silent — session data is still in memory
+                })
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to evaluate answer')
             setPhase('ready') // allow retry

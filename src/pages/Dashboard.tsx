@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { useDocuments } from '@/hooks/useDocuments'
+import { useSessions } from '@/hooks/useSessions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
     Plus,
@@ -10,11 +12,14 @@ import {
     BookOpen,
     Trash2,
     Clock,
+    Trophy,
+    MessageSquare,
 } from 'lucide-react'
 
 export default function Dashboard() {
     const { user } = useAuth()
-    const { documents, loading, remove } = useDocuments()
+    const { documents, loading: docsLoading, remove } = useDocuments()
+    const { sessions, loading: sessionsLoading } = useSessions()
     const firstName = user?.displayName?.split(' ')[0] || 'there'
 
     return (
@@ -46,6 +51,92 @@ export default function Dashboard() {
                 </Card>
             </Link>
 
+            {/* Recent Sessions */}
+            <div className="space-y-4">
+                <h2 className="text-sm font-medium text-muted-foreground">
+                    Recent Sessions
+                </h2>
+
+                {sessionsLoading && (
+                    <div className="space-y-3">
+                        {[1, 2].map((n) => (
+                            <Card key={n}>
+                                <CardContent className="py-4">
+                                    <div className="space-y-2">
+                                        <Skeleton className="h-4 w-48" />
+                                        <Skeleton className="h-3 w-32" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                )}
+
+                {!sessionsLoading && sessions.length === 0 && (
+                    <Card>
+                        <CardContent className="flex flex-col items-center justify-center py-10 text-center">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted mb-3">
+                                <MessageSquare className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                            <p className="text-sm font-medium">No sessions yet</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Complete an interview to see results here
+                            </p>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {!sessionsLoading && sessions.length > 0 && (
+                    <div className="space-y-2">
+                        {sessions.slice(0, 5).map((s) => (
+                            <Link
+                                key={s.firestoreId}
+                                to={s.state === 'completed' ? `/results/${s.firestoreId}` : `/session/${s.documentId}`}
+                            >
+                                <Card className="transition-colors hover:border-foreground/20 mb-2">
+                                    <CardContent className="flex items-center gap-4 py-4">
+                                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted">
+                                            <Trophy className="h-4 w-4 text-muted-foreground" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium truncate">
+                                                {s.documentTitle}
+                                            </p>
+                                            <div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground">
+                                                <span>{s.questions.length} questions</span>
+                                                <span>·</span>
+                                                <span className="flex items-center gap-1">
+                                                    <Clock className="h-3 w-3" />
+                                                    {s.createdAt.toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            {s.overallScore != null && (
+                                                <span className={`text-lg font-bold ${s.overallScore >= 80
+                                                        ? 'text-green-600'
+                                                        : s.overallScore >= 50
+                                                            ? 'text-amber-500'
+                                                            : 'text-red-500'
+                                                    }`}>
+                                                    {s.overallScore}
+                                                </span>
+                                            )}
+                                            <Badge
+                                                variant={s.state === 'completed' ? 'secondary' : 'outline'}
+                                                className="text-[10px]"
+                                            >
+                                                {s.state === 'completed' ? 'Done' : 'In Progress'}
+                                            </Badge>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                        ))}
+                    </div>
+                )}
+            </div>
+
             {/* Documents */}
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -59,8 +150,7 @@ export default function Dashboard() {
                     )}
                 </div>
 
-                {/* Loading */}
-                {loading && (
+                {docsLoading && (
                     <div className="space-y-3">
                         {[1, 2].map((n) => (
                             <Card key={n}>
@@ -76,8 +166,7 @@ export default function Dashboard() {
                     </div>
                 )}
 
-                {/* Empty */}
-                {!loading && documents.length === 0 && (
+                {!docsLoading && documents.length === 0 && (
                     <Card>
                         <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted mb-4">
@@ -94,8 +183,7 @@ export default function Dashboard() {
                     </Card>
                 )}
 
-                {/* Document list */}
-                {!loading && documents.length > 0 && (
+                {!docsLoading && documents.length > 0 && (
                     <div className="space-y-2">
                         {documents.map((doc) => (
                             <Card key={doc.id} className="group">
