@@ -264,9 +264,17 @@ export default function Configure() {
                                 setSaving(true)
                                 try {
                                     const docId = await saveDocument(user.uid, analysis, parsed.file)
-                                    toast.success('Document saved!')
-                                    navigate(`/`)
-                                    void docId
+                                    toast.success('Document saved — starting interview!')
+                                    navigate(`/session/${docId}`, {
+                                        state: {
+                                            config: {
+                                                persona: 'socratic',
+                                                difficulty: analysis.estimatedDifficulty,
+                                                questionCount: 5,
+                                                questionTypes: ['conceptual', 'applied'],
+                                            },
+                                        },
+                                    })
                                 } catch (err) {
                                     toast.error(err instanceof Error ? err.message : 'Failed to save')
                                 } finally {
@@ -279,7 +287,7 @@ export default function Configure() {
                             ) : (
                                 <ArrowRight className="mr-2 h-4 w-4" />
                             )}
-                            {saving ? 'Saving…' : 'Save & Continue'}
+                            {saving ? 'Starting…' : 'Start Interview'}
                         </Button>
                     </div>
                 </div>
