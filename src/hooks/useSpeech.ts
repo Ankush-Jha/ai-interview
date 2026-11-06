@@ -32,12 +32,13 @@ const browserSttSupported =
 export function useSpeechSynthesis() {
     const [isSpeaking, setIsSpeaking] = useState(false)
     const [enabled, setEnabled] = useState(false)
+    const onSpeakEndRef = useRef<(() => void) | null>(null)
     const audioRef = useRef<HTMLAudioElement | null>(null)
     const apiKey = getElevenLabsKey()
     const useElevenLabs = !!apiKey
 
-    const speak = useCallback(async (text: string) => {
-        if (!enabled) return
+    const speak = useCallback(async (text: string, force = false) => {
+        if (!enabled && !force) return
 
         // Stop any current audio
         if (audioRef.current) {
@@ -70,7 +71,7 @@ export function useSpeechSynthesis() {
 
                 if (!response.ok) {
                     console.warn('ElevenLabs TTS failed, falling back to browser TTS')
-                    fallbackBrowserSpeak(text, setIsSpeaking)
+                    fallbackBrowserSpeak(text, setIsSpeaking, onSpeakEndRef.current)
                     return
                 }
 
@@ -81,6 +82,7 @@ export function useSpeechSynthesis() {
                 audio.onended = () => {
                     setIsSpeaking(false)
                     URL.revokeObjectURL(audioUrl)
+                    onSpeakEndRef.current?.()
                 }
                 audio.onerror = () => {
                     setIsSpeaking(false)
@@ -92,11 +94,12 @@ export function useSpeechSynthesis() {
             } catch (err) {
                 console.warn('ElevenLabs error:', err)
                 setIsSpeaking(false)
+                onSpeakEndRef.current?.()
                 fallbackBrowserSpeak(text, setIsSpeaking)
             }
         } else {
             // ── Browser TTS fallback ──
-            fallbackBrowserSpeak(text, setIsSpeaking)
+            fallbackBrowserSpeak(text, setIsSpeaking, onSpeakEndRef.current)
         }
     }, [enabled, useElevenLabs, apiKey])
 
@@ -123,19 +126,25 @@ export function useSpeechSynthesis() {
         })
     }, [])
 
+    // Set callback for when speech ends (for auto-listen)
+    const setOnSpeakEnd = useCallback((cb: (() => void) | null) => {
+        onSpeakEndRef.current = cb
+    }, [])
+
     return {
         speak,
         stop,
         isSpeaking,
         enabled,
         toggleEnabled,
+        setOnSpeakEnd,
         supported: true, // always supported (browser fallback)
         engine: useElevenLabs ? 'elevenlabs' : 'browser',
     }
 }
 
 // Browser TTS fallback
-function fallbackBrowserSpeak(text: string, setIsSpeaking: (v: boolean) => void) {
+function fallbackBrowserSpeak(text: string, setIsSpeaking: (v: boolean) => void, onSpeakEndCb?: (() => void) | null) {
     if (!browserTtsSupported) {
         setIsSpeaking(false)
         return
@@ -154,7 +163,10 @@ function fallbackBrowserSpeak(text: string, setIsSpeaking: (v: boolean) => void)
     )
     if (preferred) utterance.voice = preferred
     utterance.onstart = () => setIsSpeaking(true)
-    utterance.onend = () => setIsSpeaking(false)
+    utterance.onend = () => {
+        setIsSpeaking(false)
+        onSpeakEndCb?.()
+    }
     utterance.onerror = () => setIsSpeaking(false)
     window.speechSynthesis.speak(utterance)
 }
@@ -165,6 +177,7 @@ export function useSpeechRecognition() {
     const [liveTranscript, setLiveTranscript] = useState('')
     const [enabled, setEnabled] = useState(false)
     const [isProcessing, setIsProcessing] = useState(false)
+    const onTranscriptReadyRef = useRef<((text: string) => void) | null>(null)
     const mediaRecorderRef = useRef<MediaRecorder | null>(null)
     const chunksRef = useRef<Blob[]>([])
     const streamRef = useRef<MediaStream | null>(null)
@@ -217,7 +230,10 @@ export function useSpeechRecognition() {
                             if (text) {
                                 setLiveTranscript((prev) => {
                                     const combined = prev ? `${prev} ${text}` : text
-                                    return combined.trim()
+                                    const result = combined.trim()
+                                    // Notify auto-submit callback after transcription
+                                    setTimeout(() => onTranscriptReadyRef.current?.(result), 200)
+                                    return result
                                 })
                             }
                         } else {
@@ -324,6 +340,11 @@ export function useSpeechRecognition() {
         }
     }, [])
 
+    // Set callback for when a transcript is ready (for auto-submit)
+    const setOnTranscriptReady = useCallback((cb: ((text: string) => void) | null) => {
+        onTranscriptReadyRef.current = cb
+    }, [])
+
     return {
         startListening,
         stopListening,
@@ -333,6 +354,7 @@ export function useSpeechRecognition() {
         liveTranscript,
         enabled,
         toggleEnabled,
+        setOnTranscriptReady,
         supported: useGroqWhisper || browserSttSupported,
         engine: useGroqWhisper ? 'groq-whisper' : 'browser',
     }

@@ -561,3 +561,235 @@
     border: 3px solid var(--neo-blue);
     box-shadow: 6px 6px 0px 0px var(--neo-blue);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   BLUEPRINT GRID SESSION STYLES
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Grid background ── */
+.bg-blueprint {
+    background-color: #ffffff;
+    background-image:
+        linear-gradient(#e5e5e5 2px, transparent 2px),
+        linear-gradient(90deg, #e5e5e5 2px, transparent 2px);
+    background-size: 40px 40px;
+    background-position: -2px -2px;
+}
+
+.dark .bg-blueprint {
+    background-color: #0a0a0a;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.06) 2px, transparent 2px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.06) 2px, transparent 2px);
+}
+
+/* ── 6px border utilities ── */
+.border-6 {
+    border-width: 6px;
+}
+
+.border-b-6 {
+    border-bottom-width: 6px;
+}
+
+.border-t-6 {
+    border-top-width: 6px;
+}
+
+.border-l-6 {
+    border-left-width: 6px;
+}
+
+.border-r-6 {
+    border-right-width: 6px;
+}
+
+/* ── Large AI orb (right panel) ── */
+.orb-large {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 6px solid currentColor;
+    position: relative;
+}
+
+.orb-large.orb-idle {
+    animation: orbPulse 3s ease-in-out infinite;
+}
+
+.orb-large.orb-speaking {
+    animation: orbSpeak 1.2s ease-in-out infinite;
+}
+
+.orb-large.orb-listening {
+    animation: orbListen 1.5s ease-in-out infinite;
+}
+
+.orb-large.orb-thinking {
+    border-style: dashed;
+    animation: orbThink 3s linear infinite;
+}
+
+/* ── Waveform for AI avatar area ── */
+.avatar-waveform {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 2px;
+    height: 40px;
+    padding: 0 32px;
+}
+
+.avatar-waveform .bar {
+    width: 4px;
+    background: var(--neo-primary);
+    animation: waveform 0.8s ease-in-out infinite;
+}
+
+/* Stagger waveform bars */
+.avatar-waveform .bar:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.avatar-waveform .bar:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.avatar-waveform .bar:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.avatar-waveform .bar:nth-child(4) {
+    animation-delay: 0.05s;
+}
+
+.avatar-waveform .bar:nth-child(5) {
+    animation-delay: 0.15s;
+}
+
+.avatar-waveform .bar:nth-child(6) {
+    animation-delay: 0.25s;
+}
+
+/* ── Transcript tags ── */
+.tag-sys {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    background: #000;
+    color: #fff;
+    padding: 0 4px;
+    line-height: 1.6;
+    font-family: 'Space Mono', monospace;
+}
+
+.tag-user {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    border: 1px solid #000;
+    padding: 0 4px;
+    line-height: 1.6;
+    font-family: 'Space Mono', monospace;
+}
+
+.dark .tag-sys {
+    background: var(--neo-primary);
+    color: #000;
+}
+
+.dark .tag-user {
+    border-color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* ── Code editor ── */
+.code-editor {
+    font-family: 'Space Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.65;
+    tab-size: 4;
+    white-space: pre;
+    outline: none;
+    min-height: 200px;
+}
+
+.code-line-numbers {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    line-height: 1.65;
+    color: #999;
+    text-align: right;
+    user-select: none;
+    padding-right: 12px;
+    border-right: 2px solid #e5e5e5;
+}
+
+.dark .code-line-numbers {
+    border-right-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* ── Execute button stripe pattern ── */
+.stripe-pattern {
+    background-image: linear-gradient(45deg,
+            rgba(0, 0, 0, 0.08) 25%, transparent 25%,
+            transparent 50%, rgba(0, 0, 0, 0.08) 50%,
+            rgba(0, 0, 0, 0.08) 75%, transparent 75%, transparent);
+    background-size: 20px 20px;
+}
+
+/* ── Blueprint scrollbar ── */
+.blueprint-scroll::-webkit-scrollbar {
+    width: 14px;
+}
+
+.blueprint-scroll::-webkit-scrollbar-track {
+    background: #fff;
+    border-left: 4px solid #000;
+}
+
+.blueprint-scroll::-webkit-scrollbar-thumb {
+    background: var(--neo-primary);
+    border: 3px solid #000;
+}
+
+.blueprint-scroll::-webkit-scrollbar-thumb:hover {
+    background: #000;
+}
+
+.dark .blueprint-scroll::-webkit-scrollbar-track {
+    background: #0a0a0a;
+    border-left-color: rgba(255, 255, 255, 0.2);
+}
+
+.dark .blueprint-scroll::-webkit-scrollbar-thumb {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Input focus glow ── */
+.blueprint-input:focus {
+    background: var(--neo-primary);
+    color: #000;
+}
+
+.blueprint-input:focus::placeholder {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+/* ── Live badge pulse ── */
+@keyframes livePulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+}
+
+.live-badge {
+    animation: livePulse 1.5s ease-in-out infinite;
+}
